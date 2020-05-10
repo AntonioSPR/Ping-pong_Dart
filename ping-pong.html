@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping-pong</title>
+    <link rel="stylesheet" href="ping-pong.css">
+</head>
+<body>
+    <header>
+        <div id="score_left" class="score">
+            <div id="score_left_up" class="zero_up"></div>
+            <div id="score_left_down" class="zero_down"></div>
+        </div>
+        <div id="to_points"></div>
+        <div id="score_right" class="score">
+            <div id="score_right_up"></div>
+            <div id="score_right_down"></div>
+        </div>
+    </header>
+    <main>
+        <aside id="left_zone" class="zone">
+            <div id="left_player" class="player"></div>
+        </aside>
+        <section id="playground">
+            <div id="division_line">
+            <div id="ball"></div>
+        </section>
+        <aside id="right_zone" class="zone">
+            <div id="right_player" class="player"></div>
+        </aside>
+    </main>
+    <footer>
+        <p> Left player controls: a s d w </p>
+        <p> Right player controls: cursor arrows</p>
+        <p> Press <em>Enter</em> to start the game</p>
+    </footer>
+    <script type="application/javascript" src="ping-pong.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,283 @@
+body {
+    background-color: #05155f;
+    color: #eeeeff;
+    font-family: Courier New, Courier, Lucida Sans Typewriter, Lucida Typewriter, monospace;
+    font-weight: normal;
+    line-height: 1.2em;
+    padding: 0;
+    margin: 0;
+}
+
+header {
+    height: 100px;
+    background-color: #09196f;
+}
+
+.score {
+    height: 80px;
+    width: 40px;
+    background-color: #0a0aff;
+}
+
+.number_up {
+    margin: 0;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    border-width: 10px;
+    border-style: solid;
+    border-top-color:  transparent;
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.number_down {
+    margin: 0;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    /* Ariba, derecha, abajo, izquierda */      
+    border-width: 10px 10px 0px 10px;
+    border-style: solid;
+    border-color:  transparent;
+}
+
+.zero_up {
+    border-top-color:  transparent;
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.zero_down {
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+   border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.one_up {
+    border-top-color:  transparent;
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.one_down {
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.two_up {
+    border-top-color:  transparent;
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.two_down {
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.three_up {
+    border-top-color:  transparent;
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.three_down {
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.four_up {
+    border-top-color:  transparent;
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.four_down {
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.five_up {
+    border-top-color:  transparent;
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.five_down {
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.six_up {
+    border-top-color:  transparent;
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.six_down {
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.seven_up {
+    border-top-color:  transparent;
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.seven_down {
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.eight_up {
+    border-top-color:  transparent;
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.eight_down {
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.nine_up {
+    border-top-color:  transparent;
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+.nine_down {
+    border-right-color:  transparent;
+    border-bottom-color:  transparent;
+    border-left-color:  transparent;
+}
+
+#score_left {
+
+}
+#score_right {
+    
+}
+
+main {
+
+}
+
+.zone {
+
+}
+
+#zone_left {
+    
+}
+
+#zone_right {
+    
+}
+
+.player {
+
+}
+
+#player_left {
+
+}
+
+#player_right {
+
+}
+
+#playground {
+
+}
+
+#division_line {
+
+}
+
+#ball {
+
+}
+
+footer {
+
+}
+
+p {
+
+}
+
+em {
+
+}
+
+
+#demo h2 {
+    font-size: 18px;
+    display: block;
+    padding-left: 30px;
+    padding-left: 32px;
+    margin: 0;
+    color: #628066;
+    text-decoration: none;
+    font-weight: normal;
+    border-bottom: 1px solid #628066;
+}
+
+#demo ul {
+    color: #628066;
+    border: 1 px solid #628066;
+    background-color: #B0E5B8;
+    margin-top: 0px;
+    margin-left: 25px;
+}
+
+.hide {
+    display:none;
+}
+
+.arrow-down {
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 7px solid #ffff00;
+    float:left;
+    margin-right: 7px;
+    cursor: pointer;
+}
+
+.arrow-right {
+    width: 0;
+    height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-left: 7px solid #ffff00;
+    float:left;
+    margin-right: 7px;
+    cursor: pointer;
+}
