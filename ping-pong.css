@@ -211,7 +211,13 @@ header {
 
 
 main {
-
+    margin: 10px auto;
+    border-style: solid;
+    border-color: aliceblue transparent;
+    border-width: 10px 0;
+/*    background-color: black;*/
+    height: 600px;
+    width: 860px;
 }
 
 .zone {
@@ -230,34 +236,57 @@ main {
 
 }
 
-#player_left {
-
+#left_zone {
+    background-color: aliceblue;
+    height: 90px;
+    width: 12px;
+    position: absolute;
+    top:  150px;
+    left: 358px;
 }
 
-#player_right {
-
+#right_player {
+    background-color: aliceblue;
+    height: 90px;
+    width: 12px;
+    position: absolute;
+    top:  150px;
+    left: 1230px;
 }
 
 #playground {
-
 }
 
 #division_line {
-
+    margin: 0 auto;
+    border-style: dashed;
+    border-color: aliceblue;
+    border-width: 0 5px;
+    height: 600px;
+    width: 0
 }
 
 #ball {
-
+    background-color: aliceblue;
+    height: 12px;
+    width: 12px;
+    position: absolute;
+    top:  150px;
+    left: 500px;
 }
 
 footer {
-
+    width: 100%;
 }
 
-p {
-
+footer p {
+    text-align: center;
 }
 
 em {
+
+}
+
+strong {
 
 }
