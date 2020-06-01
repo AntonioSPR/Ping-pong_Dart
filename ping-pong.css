@@ -3,18 +3,17 @@
     margin: 0;
 }
 
-html {
-    font-family: Courier New, Courier, Lucida Sans Typewriter, Lucida Typewriter, monospace;
-    font-weight: normal;
-    color: aliceblue;
-    line-height: 1.2em;
-    background-color: #05155f;
+html, body {
+    width: 100%;
+    height: 100%;
+    background-color: black;
 }
 
+/* ---------- The scoreboard ---------------------------------------------- */
 header {
     height: 70px;
     width: 110px;
-    margin: 0 auto;
+    margin: 10px auto;
 }
 
 #two_points {
@@ -28,29 +27,21 @@ header {
     width: 10px;
     margin: 20px 10px 10px 10px;
     float: left;
-    background-color: aliceblue;
+    background-color: #00CC00;
 }
 
-#point_down {
+#point_bottom {
     height: 10px;
     width: 10px;
     margin: 0  10px 10px 10px;
     float: left;
-    background-color: aliceblue;
+    background-color: #00CC00;
 }
 
-.score {
+.scoreboard {
     height: 70px;
     width: 40px;
     float: left;
-}
-
-#score_left {
-
-}
-
-#score_right {
-    
 }
 
 .number_up {
@@ -61,232 +52,54 @@ header {
     border-style: solid;
 }
 
-.number_down {
+.number_bottom {
     width: 20px;
     height: 20px;
     border-width: 5px 10px 10px 10px;
-               /* top, right, bottom, left (like a clock)*/      
     border-style: solid;
 }
 
-.zero_up {
-    border-top-color: aliceblue;
-    border-right-color: aliceblue;
-    border-bottom-color: transparent;
-    border-left-color: aliceblue;
-}
+.zero_up      { border-color: #00CC00     #00CC00     transparent #00CC00    ;}
+.zero_bottom  { border-color: transparent #00CC00     #00CC00     #00CC00    ;}
+.one_up       { border-color: transparent #00CC00     transparent transparent;}
+.one_bottom   { border-color: transparent #00CC00     transparent transparent;}
+.two_up       { border-color: #00CC00     #00CC00     #00CC00     transparent;}
+.two_bottom   { border-color: #00CC00     transparent #00CC00     #00CC00    ;}
+.three_up     { border-color: #00CC00     #00CC00     #00CC00     transparent;}
+.three_bottom { border-color: #00CC00     #00CC00     #00CC00     transparent;}
+.four_up      { border-color: transparent #00CC00     #00CC00     #00CC00    ;}
+.four_bottom  { border-color: #00CC00     #00CC00     transparent transparent;}
+.five_up      { border-color: #00CC00     transparent #00CC00     #00CC00    ;}
+.five_bottom  { border-color: #00CC00     #00CC00     #00CC00     transparent;}
+.six_up       { border-color: transparent transparent #00CC00     #00CC00    ;}
+.six_bottom   { border-color: #00CC00     #00CC00     #00CC00     #00CC00    ;}
+.seven_up     { border-color: #00CC00     #00CC00     transparent transparent;}
+.seven_bottom { border-color: transparent #00CC00     transparent transparent;}
+.eight_up     { border-color: #00CC00     #00CC00     #00CC00     #00CC00    ;}
+.eight_bottom { border-color: #00CC00     #00CC00     #00CC00     #00CC00    ;}
+.nine_up      { border-color: #00CC00     #00CC00     #00CC00     #00CC00    ;}
+.nine_bottom  { border-color: #00CC00     #00CC00     transparent transparent;}
 
-.zero_down {
-    border-top-color: transparent;
-    border-right-color: aliceblue;
-    border-bottom-color: aliceblue;
-    border-left-color: aliceblue;
-}
-
-.one_up {
-    border-top-color:  transparent;
-    border-right-color:  aliceblue;
-    border-bottom-color:  transparent;
-    border-left-color:  transparent;
-}
-
-.one_down {
-    border-top-color: transparent;
-    border-right-color:  aliceblue;
-    border-bottom-color:  transparent;
-    border-left-color:  transparent;
-}
-
-.two_up {
-    border-top-color:  aliceblue;
-    border-right-color:  aliceblue;
-    border-bottom-color:  aliceblue;
-    border-left-color:  transparent;
-}
-
-.two_down {
-    border-top-color: aliceblue;
-    border-right-color:  transparent;
-    border-bottom-color:  aliceblue;
-    border-left-color:  aliceblue;
-}
-
-.three_up {
-    border-top-color:  aliceblue;
-    border-right-color:  aliceblue;
-    border-bottom-color:  aliceblue;
-    border-left-color:  transparent;
-}
-
-.three_down {
-    border-top-color: aliceblue;
-    border-right-color:  aliceblue;
-    border-bottom-color:  aliceblue;
-    border-left-color:  transparent;
-}
-
-.four_up {
-    border-top-color:  transparent;
-    border-right-color:  aliceblue;
-    border-bottom-color:  aliceblue;
-    border-left-color:  aliceblue;
-}
-
-.four_down {
-    border-top-color: aliceblue;
-    border-right-color:  aliceblue;
-    border-bottom-color:  transparent;
-    border-left-color:  transparent;
-}
-
-.five_up {
-    border-top-color:  aliceblue;
-    border-right-color:  transparent;
-    border-bottom-color:  aliceblue;
-    border-left-color:  aliceblue;
-}
-
-.five_down {
-    border-top-color: aliceblue;
-    border-right-color:  aliceblue;
-    border-bottom-color:  aliceblue;
-    border-left-color:  transparent;
-}
-
-.six_up {
-    border-top-color:  transparent;
-    border-right-color:  transparent;
-    border-bottom-color:  aliceblue;
-    border-left-color:  aliceblue;
-}
-
-.six_down {
-    border-top-color: aliceblue;
-    border-right-color:  aliceblue;
-    border-bottom-color:  aliceblue;
-    border-left-color:  aliceblue;
-}
-
-.seven_up {
-    border-top-color:  aliceblue;
-    border-right-color:  aliceblue;
-    border-bottom-color:  transparent;
-    border-left-color:  transparent;
-}
-
-.seven_down {
-    border-top-color: transparent;
-    border-right-color:  aliceblue;
-    border-bottom-color:  transparent;
-    border-left-color:  transparent;
-}
-
-.eight_up {
-    border-top-color:  aliceblue;
-    border-right-color:  aliceblue;
-    border-bottom-color:  aliceblue;
-    border-left-color:  aliceblue;
-}
-
-.eight_down {
-    border-top-color: aliceblue;
-    border-right-color:  aliceblue;
-    border-bottom-color:  aliceblue;
-    border-left-color:  aliceblue;
-}
-
-.nine_up {
-    border-top-color:  aliceblue;
-    border-right-color:  aliceblue;
-    border-bottom-color:  aliceblue;
-    border-left-color:  aliceblue;
-}
-
-.nine_down {
-    border-top-color: aliceblue;
-    border-right-color:  aliceblue;
-    border-bottom-color:  transparent;
-    border-left-color:  transparent;
-}
-
-
+/* ---------- The playground ---------------------------------------------- */
 main {
     margin: 10px auto;
     border-style: solid;
-    border-color: aliceblue transparent;
+    border-color: #00CC00 transparent;
     border-width: 10px 0;
-/*    background-color: black;*/
     height: 600px;
-    width: 860px;
-}
+    width: 800px;}
 
-.zone {
-
-}
-
-#zone_left {
-    
-}
-
-#zone_right {
-    
-}
-
-.player {
-
-}
-
-#left_zone {
-    background-color: aliceblue;
-    height: 90px;
-    width: 12px;
-    position: absolute;
-    top:  150px;
-    left: 358px;
-}
-
-#right_player {
-    background-color: aliceblue;
-    height: 90px;
-    width: 12px;
-    position: absolute;
-    top:  150px;
-    left: 1230px;
-}
-
-#playground {
-}
-
-#division_line {
-    margin: 0 auto;
-    border-style: dashed;
-    border-color: aliceblue;
-    border-width: 0 5px;
+#canvas {
+    width: 800px;
     height: 600px;
-    width: 0
 }
 
-#ball {
-    background-color: aliceblue;
-    height: 12px;
-    width: 12px;
-    position: absolute;
-    top:  150px;
-    left: 500px;
-}
-
+/* ---------- The footer -------------------------------------------------- */
 footer {
     width: 100%;
-}
-
-footer p {
+    font-family: Courier New, Courier, Lucida Typewriter, monospace;
+    font-weight: bold;
+    color: #00CC00;
+    line-height: 1.2em;
     text-align: center;
-}
-
-em {
-
-}
-
-strong {
-
 }

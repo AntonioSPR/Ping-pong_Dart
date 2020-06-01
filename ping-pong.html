@@ -3,42 +3,34 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta Attribution="https://dart.academy/web-games-with-dart-and-the-html5-canvas/"/>
     <title>Ping-pong</title>
     <link rel="stylesheet" href="ping-pong.css">
+    <link rel="icon" href="ping-pong.png"/>
 </head>
 <body>
-    <header>
-        <div id="score_left" class="score">
-            <div id="score_left_up" class="number_up zero_up"></div>
-            <div id="score_left_down" class="number_down zero_down"></div>
-        </div>
+<header>
+    <div class="scoreboard">
+        <div id="scoreboard_left_up"     class="number_up zero_up"        ></div>
+        <div id="scoreboard_left_bottom" class="number_bottom zero_bottom"></div>
+    </div>
 
-        <div id="two_points"><div id="point_up"></div><div id="point_down"></div></div>
+    <div id="two_points"><div id="point_up"></div><div id="point_bottom"></div></div>
 
-        <div id="score_right" class="score">
-            <div id="score_right_up" class="number_up zero_up"></div>
-            <div id="score_right_down" class="number_down zero_down"></div>
-        </div>
-    </header>
-    <main>
-        <aside id="left_zone" class="zone">
-            <div id="left_player" class="player"></div>
-        </aside>
-        <section id="playground">
-            <div id="division_line">
-            <div id="ball"></div>
-        </section>
-        <aside id="right_zone" class="zone">
-            <div id="right_player" class="player"></div>
-        </aside>
-    </main>
-    <footer>
-    	<p>Left player controls: a s d w&emsp;&emsp;&emsp;<strong>-</strong>&emsp;&emsp;&emsp;
-    	   Right player controls: cursor arrows&emsp;&emsp;&emsp;<strong>-</strong>&emsp;&emsp;&emsp;
-    	   Press <em>Enter</em> to start the game
-    	</p>
-    </footer>
-	<script type="application/javascript" src="ping-pong.js"></script>
+    <div class="scoreboard">
+        <div id="scoreboard_right_up"     class="number_up zero_up"        ></div>
+        <div id="scoreboard_right_bottom" class="number_bottom zero_bottom"></div>
+    </div>
+</header>
+<main>
+    <canvas id="canvas"></canvas>
+</main>
+<footer>
+    <p>Left player controls: a s d w&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;
+        Right player controls: cursor arrows&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;
+        Press <em>Enter</em> to start the game
+    </p>
+</footer>
+<script type="application/javascript" src="ping-pong.js"></script>
 </body>
 </html>
-
