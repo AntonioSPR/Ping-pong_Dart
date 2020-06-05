@@ -2,9 +2,9 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta Attribution="https://dart.academy/web-games-with-dart-and-the-html5-canvas/"/>
-    <title>Ping-pong</title>
+<!--    <meta Attribution="https://dart.academy/web-games-with-dart-and-the-html5-canvas/"/>-->
+    <title>Ping-pong, a sample
+        game made w</title>
     <link rel="stylesheet" href="ping-pong.css">
     <link rel="icon" href="ping-pong.png"/>
 </head>
@@ -23,13 +23,16 @@
     </div>
 </header>
 <main>
-    <canvas id="canvas"></canvas>
+    <!-- It is mandatory to put the dimensions of the canvas here.
+         If they are put in the .CSS "weird things happen"         -->
+    <canvas id="canvas" width="800" height="600"></canvas>
 </main>
 <footer>
-    <p>Left player controls: a s d w&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;
-        Right player controls: cursor arrows&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;
+    <p> Left player controls: a z&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;
+        Right player controls: &uarr; &darr;&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;
         Press <em>Enter</em> to start the game
     </p>
+    <p id="text"></p>
 </footer>
 <script type="application/javascript" src="ping-pong.js"></script>
 </body>
