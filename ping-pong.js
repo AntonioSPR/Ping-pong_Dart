@@ -221,6 +221,7 @@
   }
   var C = {},
   H = {JS_CONST: function JS_CONST() {
+    }, EfficientLengthIterable: function EfficientLengthIterable() {
     },
     unminifyOrTag: function(rawClassName) {
       var preserved = H.unmangleGlobalNameIfPreservedAnyways(rawClassName);
@@ -248,6 +249,14 @@
       if (typeof res !== "string")
         throw H.wrapException(H.argumentErrorValue(value));
       return res;
+    },
+    Primitives_objectHashCode: function(object) {
+      var hash = object.$identityHash;
+      if (hash == null) {
+        hash = Math.random() * 0x3fffffff | 0;
+        object.$identityHash = hash;
+      }
+      return hash;
     },
     Primitives_objectTypeName: function(object) {
       return H.Primitives__objectClassName(object) + H._joinArguments(H.getRuntimeTypeInfo(object), 0, null);
@@ -299,9 +308,9 @@
     diagnoseIndexError: function(indexable, index) {
       var t1, $length, t2, _s5_ = "index";
       if (typeof index !== "number" || Math.floor(index) !== index)
-        return new P.ArgumentError(index, _s5_, null);
+        return new P.ArgumentError(true, index, _s5_, null);
       t1 = J.getInterceptor$asx(indexable);
-      $length = t1.get$length(indexable);
+      $length = H.intTypeCheck(t1.get$length(indexable));
       if (!(index < 0)) {
         if (typeof $length !== "number")
           return H.iae($length);
@@ -309,13 +318,13 @@
       } else
         t2 = true;
       if (t2) {
-        t1 = $length == null ? t1.get$length(indexable) : $length;
-        return new P.IndexError(t1, index, _s5_, "Index out of range");
+        t1 = H.intTypeCheck($length == null ? t1.get$length(indexable) : $length);
+        return new P.IndexError(t1, true, index, _s5_, "Index out of range");
       }
       return P.RangeError$value(index, _s5_);
     },
     argumentErrorValue: function(object) {
-      return new P.ArgumentError(object, null, null);
+      return new P.ArgumentError(true, object, null, null);
     },
     wrapException: function(ex) {
       var wrapper;
@@ -337,7 +346,188 @@
       throw H.wrapException(ex);
     },
     throwConcurrentModificationError: function(collection) {
-      throw H.wrapException(new P.ConcurrentModificationError(collection));
+      throw H.wrapException(P.ConcurrentModificationError$(collection));
+    },
+    TypeErrorDecoder_extractPattern: function(message) {
+      var match, $arguments, argumentsExpr, expr, method, receiver;
+      message = H.quoteStringForRegExp(message.replace(String({}), '$receiver$'));
+      match = message.match(/\\\$[a-zA-Z]+\\\$/g);
+      if (match == null)
+        match = H.setRuntimeTypeInfo([], [P.String]);
+      $arguments = match.indexOf("\\$arguments\\$");
+      argumentsExpr = match.indexOf("\\$argumentsExpr\\$");
+      expr = match.indexOf("\\$expr\\$");
+      method = match.indexOf("\\$method\\$");
+      receiver = match.indexOf("\\$receiver\\$");
+      return new H.TypeErrorDecoder(message.replace(new RegExp('\\\\\\$arguments\\\\\\$', 'g'), '((?:x|[^x])*)').replace(new RegExp('\\\\\\$argumentsExpr\\\\\\$', 'g'), '((?:x|[^x])*)').replace(new RegExp('\\\\\\$expr\\\\\\$', 'g'), '((?:x|[^x])*)').replace(new RegExp('\\\\\\$method\\\\\\$', 'g'), '((?:x|[^x])*)').replace(new RegExp('\\\\\\$receiver\\\\\\$', 'g'), '((?:x|[^x])*)'), $arguments, argumentsExpr, expr, method, receiver);
+    },
+    TypeErrorDecoder_provokeCallErrorOn: function(expression) {
+      return function($expr$) {
+        var $argumentsExpr$ = '$arguments$';
+        try {
+          $expr$.$method$($argumentsExpr$);
+        } catch (e) {
+          return e.message;
+        }
+      }(expression);
+    },
+    TypeErrorDecoder_provokePropertyErrorOn: function(expression) {
+      return function($expr$) {
+        try {
+          $expr$.$method$;
+        } catch (e) {
+          return e.message;
+        }
+      }(expression);
+    },
+    NullError$: function(_message, match) {
+      return new H.NullError(_message, match == null ? null : match.method);
+    },
+    JsNoSuchMethodError$: function(_message, match) {
+      var t1 = match == null,
+        t2 = t1 ? null : match.method;
+      return new H.JsNoSuchMethodError(_message, t2, t1 ? null : match.receiver);
+    },
+    unwrapException: function(ex) {
+      var message, number, ieErrorCode, nsme, notClosure, nullCall, nullLiteralCall, undefCall, undefLiteralCall, nullProperty, undefProperty, undefLiteralProperty, match, t2, _null = null,
+        t1 = new H.unwrapException_saveStackTrace(ex);
+      if (ex == null)
+        return;
+      if (ex instanceof H.ExceptionAndStackTrace)
+        return t1.call$1(ex.dartException);
+      if (typeof ex !== "object")
+        return ex;
+      if ("dartException" in ex)
+        return t1.call$1(ex.dartException);
+      else if (!("message" in ex))
+        return ex;
+      message = ex.message;
+      if ("number" in ex && typeof ex.number == "number") {
+        number = ex.number;
+        ieErrorCode = number & 65535;
+        if ((C.JSInt_methods._shrOtherPositive$1(number, 16) & 8191) === 10)
+          switch (ieErrorCode) {
+            case 438:
+              return t1.call$1(H.JsNoSuchMethodError$(H.S(message) + " (Error " + ieErrorCode + ")", _null));
+            case 445:
+            case 5007:
+              return t1.call$1(H.NullError$(H.S(message) + " (Error " + ieErrorCode + ")", _null));
+          }
+      }
+      if (ex instanceof TypeError) {
+        nsme = $.$get$TypeErrorDecoder_noSuchMethodPattern();
+        notClosure = $.$get$TypeErrorDecoder_notClosurePattern();
+        nullCall = $.$get$TypeErrorDecoder_nullCallPattern();
+        nullLiteralCall = $.$get$TypeErrorDecoder_nullLiteralCallPattern();
+        undefCall = $.$get$TypeErrorDecoder_undefinedCallPattern();
+        undefLiteralCall = $.$get$TypeErrorDecoder_undefinedLiteralCallPattern();
+        nullProperty = $.$get$TypeErrorDecoder_nullPropertyPattern();
+        $.$get$TypeErrorDecoder_nullLiteralPropertyPattern();
+        undefProperty = $.$get$TypeErrorDecoder_undefinedPropertyPattern();
+        undefLiteralProperty = $.$get$TypeErrorDecoder_undefinedLiteralPropertyPattern();
+        match = nsme.matchTypeError$1(message);
+        if (match != null)
+          return t1.call$1(H.JsNoSuchMethodError$(H.stringTypeCheck(message), match));
+        else {
+          match = notClosure.matchTypeError$1(message);
+          if (match != null) {
+            match.method = "call";
+            return t1.call$1(H.JsNoSuchMethodError$(H.stringTypeCheck(message), match));
+          } else {
+            match = nullCall.matchTypeError$1(message);
+            if (match == null) {
+              match = nullLiteralCall.matchTypeError$1(message);
+              if (match == null) {
+                match = undefCall.matchTypeError$1(message);
+                if (match == null) {
+                  match = undefLiteralCall.matchTypeError$1(message);
+                  if (match == null) {
+                    match = nullProperty.matchTypeError$1(message);
+                    if (match == null) {
+                      match = nullLiteralCall.matchTypeError$1(message);
+                      if (match == null) {
+                        match = undefProperty.matchTypeError$1(message);
+                        if (match == null) {
+                          match = undefLiteralProperty.matchTypeError$1(message);
+                          t2 = match != null;
+                        } else
+                          t2 = true;
+                      } else
+                        t2 = true;
+                    } else
+                      t2 = true;
+                  } else
+                    t2 = true;
+                } else
+                  t2 = true;
+              } else
+                t2 = true;
+            } else
+              t2 = true;
+            if (t2)
+              return t1.call$1(H.NullError$(H.stringTypeCheck(message), match));
+          }
+        }
+        return t1.call$1(new H.UnknownJsTypeError(typeof message === "string" ? message : ""));
+      }
+      if (ex instanceof RangeError) {
+        if (typeof message === "string" && message.indexOf("call stack") !== -1)
+          return new P.StackOverflowError();
+        message = function(ex) {
+          try {
+            return String(ex);
+          } catch (e) {
+          }
+          return null;
+        }(ex);
+        return t1.call$1(new P.ArgumentError(false, _null, _null, typeof message === "string" ? message.replace(/^RangeError:\s*/, "") : message));
+      }
+      if (typeof InternalError == "function" && ex instanceof InternalError)
+        if (typeof message === "string" && message === "too much recursion")
+          return new P.StackOverflowError();
+      return ex;
+    },
+    getTraceFromException: function(exception) {
+      var trace;
+      if (exception instanceof H.ExceptionAndStackTrace)
+        return exception.stackTrace;
+      if (exception == null)
+        return new H._StackTrace(exception);
+      trace = exception.$cachedTrace;
+      if (trace != null)
+        return trace;
+      return exception.$cachedTrace = new H._StackTrace(exception);
+    },
+    invokeClosure: function(closure, numberOfArguments, arg1, arg2, arg3, arg4) {
+      H.interceptedTypeCheck(closure, "$isFunction");
+      switch (H.intTypeCheck(numberOfArguments)) {
+        case 0:
+          return closure.call$0();
+        case 1:
+          return closure.call$1(arg1);
+        case 2:
+          return closure.call$2(arg1, arg2);
+        case 3:
+          return closure.call$3(arg1, arg2, arg3);
+        case 4:
+          return closure.call$4(arg1, arg2, arg3, arg4);
+      }
+      throw H.wrapException(new P._Exception("Unsupported number of arguments for wrapped closure"));
+    },
+    convertDartClosureToJS: function(closure, arity) {
+      var $function;
+      if (closure == null)
+        return;
+      $function = closure.$identity;
+      if (!!$function)
+        return $function;
+      $function = function(closure, arity, invoke) {
+        return function(a1, a2, a3, a4) {
+          return invoke(closure, arity, a1, a2, a3, a4);
+        };
+      }(closure, arity, H.invokeClosure);
+      closure.$identity = $function;
+      return $function;
     },
     Closure_fromTearOff: function(receiver, functions, applyTrampolineIndex, reflectionInfo, isStatic, isIntercepted, propertyName) {
       var $constructor, t1, trampoline, signatureFunction, applyTrampoline, i, stub, stubCallName, _null = null,
@@ -587,12 +777,31 @@
           return $name;
       }
     },
+    boolConversionCheck: function(value) {
+      if (value == null)
+        H.assertThrow("boolean expression must not be null");
+      return value;
+    },
     stringTypeCheck: function(value) {
       if (value == null)
         return value;
       if (typeof value === "string")
         return value;
       throw H.wrapException(H.TypeErrorImplementation$(value, "String"));
+    },
+    numTypeCheck: function(value) {
+      if (value == null)
+        return value;
+      if (typeof value === "number")
+        return value;
+      throw H.wrapException(H.TypeErrorImplementation$(value, "num"));
+    },
+    boolTypeCheck: function(value) {
+      if (value == null)
+        return value;
+      if (typeof value === "boolean")
+        return value;
+      throw H.wrapException(H.TypeErrorImplementation$(value, "bool"));
     },
     intTypeCheck: function(value) {
       if (value == null)
@@ -608,6 +817,24 @@
       if (value == null)
         return value;
       if ((typeof value === "object" || typeof value === "function") && J.getInterceptor$(value)[property])
+        return value;
+      H.propertyTypeError(value, property);
+    },
+    listTypeCheck: function(value) {
+      if (value == null)
+        return value;
+      if (!!J.getInterceptor$(value).$isList)
+        return value;
+      throw H.wrapException(H.TypeErrorImplementation$(value, "List<dynamic>"));
+    },
+    listSuperNativeTypeCheck: function(value, property) {
+      var t1;
+      if (value == null)
+        return value;
+      t1 = J.getInterceptor$(value);
+      if (!!t1.$isList)
+        return value;
+      if (t1[property])
         return value;
       H.propertyTypeError(value, property);
     },
@@ -631,6 +858,28 @@
         return false;
       return H._isFunctionSubtype(functionTypeObject, null, functionTypeRti, null);
     },
+    functionTypeCheck: function(value, functionTypeRti) {
+      var $self, t1;
+      if (value == null)
+        return value;
+      if ($._inTypeAssertion)
+        return value;
+      $._inTypeAssertion = true;
+      try {
+        if (H.functionTypeTest(value, functionTypeRti))
+          return value;
+        $self = H.runtimeTypeToString(functionTypeRti);
+        t1 = H.TypeErrorImplementation$(value, $self);
+        throw H.wrapException(t1);
+      } finally {
+        $._inTypeAssertion = false;
+      }
+    },
+    futureOrCheck: function(o, futureOrRti) {
+      if (o != null && !H.checkSubtypeOfRuntimeType(o, futureOrRti))
+        H.throwExpression(H.TypeErrorImplementation$(o, H.runtimeTypeToString(futureOrRti)));
+      return o;
+    },
     TypeErrorImplementation$: function(value, type) {
       return new H.TypeErrorImplementation("TypeError: " + P.Error_safeToString(value) + ": type '" + H.S(H._typeDescription(value)) + "' is not a subtype of type '" + type + "'");
     },
@@ -644,6 +893,9 @@
         return "Closure";
       }
       return H.Primitives_objectTypeName(value);
+    },
+    assertThrow: function(message) {
+      throw H.wrapException(new H._AssertionError(message));
     },
     throwCyclicInit: function(staticName) {
       throw H.wrapException(new P.CyclicInitializationError(staticName));
@@ -1117,6 +1369,43 @@
     applyHooksTransformer: function(transformer, hooks) {
       return transformer(hooks) || hooks;
     },
+    quoteStringForRegExp: function(string) {
+      if (/[[\]{}()*+?.\\^$|]/.test(string))
+        return string.replace(/[[\]{}()*+?.\\^$|]/g, "\\$&");
+      return string;
+    },
+    TypeErrorDecoder: function TypeErrorDecoder(t0, t1, t2, t3, t4, t5) {
+      var _ = this;
+      _._pattern = t0;
+      _._arguments = t1;
+      _._argumentsExpr = t2;
+      _._expr = t3;
+      _._method = t4;
+      _._receiver = t5;
+    },
+    NullError: function NullError(t0, t1) {
+      this._message = t0;
+      this._method = t1;
+    },
+    JsNoSuchMethodError: function JsNoSuchMethodError(t0, t1, t2) {
+      this._message = t0;
+      this._method = t1;
+      this._receiver = t2;
+    },
+    UnknownJsTypeError: function UnknownJsTypeError(t0) {
+      this._message = t0;
+    },
+    ExceptionAndStackTrace: function ExceptionAndStackTrace(t0, t1) {
+      this.dartException = t0;
+      this.stackTrace = t1;
+    },
+    unwrapException_saveStackTrace: function unwrapException_saveStackTrace(t0) {
+      this.ex = t0;
+    },
+    _StackTrace: function _StackTrace(t0) {
+      this._exception = t0;
+      this._trace = null;
+    },
     Closure: function Closure() {
     },
     TearOffClosure: function TearOffClosure() {
@@ -1128,12 +1417,15 @@
       _._self = t0;
       _._target = t1;
       _._receiver = t2;
-      _._name = t3;
+      _.__js_helper$_name = t3;
     },
     TypeErrorImplementation: function TypeErrorImplementation(t0) {
       this.message = t0;
     },
     RuntimeError: function RuntimeError(t0) {
+      this.message = t0;
+    },
+    _AssertionError: function _AssertionError(t0) {
       this.message = t0;
     },
     initHooks_closure: function initHooks_closure(t0) {
@@ -1146,7 +1438,7 @@
       this.prototypeForTag = t0;
     },
     extractKeys: function(victim) {
-      return J.JSArray_markFixedList(H.setRuntimeTypeInfo(victim ? Object.keys(victim) : [], [null]));
+      return J.JSArray_JSArray$markFixed(victim ? Object.keys(victim) : [], null);
     },
     unmangleGlobalNameIfPreservedAnyways: function($name) {
       return init.mangledGlobalNames[$name];
@@ -1195,6 +1487,9 @@
         return C.UnknownJavaScriptObject_methods;
       }
       return C.UnknownJavaScriptObject_methods;
+    },
+    JSArray_JSArray$markFixed: function(allocation, $E) {
+      return J.JSArray_markFixedList(H.setRuntimeTypeInfo(allocation, [$E]));
     },
     JSArray_markFixedList: function(list) {
       list.fixed$length = Array;
@@ -1251,8 +1546,18 @@
         return receiver;
       return J.getNativeInterceptor(receiver);
     },
+    get$hashCode$: function(receiver) {
+      return J.getInterceptor$(receiver).get$hashCode(receiver);
+    },
     get$length$asx: function(receiver) {
       return J.getInterceptor$asx(receiver).get$length(receiver);
+    },
+    $eq$: function(receiver, a0) {
+      if (receiver == null)
+        return a0 == null;
+      if (typeof receiver != "object")
+        return a0 != null && receiver === a0;
+      return J.getInterceptor$(receiver).$eq(receiver, a0);
     },
     focus$0$x: function(receiver) {
       return J.getInterceptor$x(receiver).focus$0(receiver);
@@ -1298,6 +1603,669 @@
     }
   },
   P = {
+    _AsyncRun__initializeScheduleImmediate: function() {
+      var div, span, t1 = {};
+      if (self.scheduleImmediate != null)
+        return P.async__AsyncRun__scheduleImmediateJsOverride$closure();
+      if (self.MutationObserver != null && self.document != null) {
+        div = self.document.createElement("div");
+        span = self.document.createElement("span");
+        t1.storedCallback = null;
+        new self.MutationObserver(H.convertDartClosureToJS(new P._AsyncRun__initializeScheduleImmediate_internalCallback(t1), 1)).observe(div, {childList: true});
+        return new P._AsyncRun__initializeScheduleImmediate_closure(t1, div, span);
+      } else if (self.setImmediate != null)
+        return P.async__AsyncRun__scheduleImmediateWithSetImmediate$closure();
+      return P.async__AsyncRun__scheduleImmediateWithTimer$closure();
+    },
+    _AsyncRun__scheduleImmediateJsOverride: function(callback) {
+      self.scheduleImmediate(H.convertDartClosureToJS(new P._AsyncRun__scheduleImmediateJsOverride_internalCallback(H.functionTypeCheck(callback, {func: 1, ret: -1})), 0));
+    },
+    _AsyncRun__scheduleImmediateWithSetImmediate: function(callback) {
+      self.setImmediate(H.convertDartClosureToJS(new P._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback(H.functionTypeCheck(callback, {func: 1, ret: -1})), 0));
+    },
+    _AsyncRun__scheduleImmediateWithTimer: function(callback) {
+      H.functionTypeCheck(callback, {func: 1, ret: -1});
+      P._TimerImpl$(0, callback);
+    },
+    _TimerImpl$: function(milliseconds, callback) {
+      var t1 = new P._TimerImpl();
+      t1._TimerImpl$2(milliseconds, callback);
+      return t1;
+    },
+    _makeAsyncAwaitCompleter: function($T) {
+      return new P._AsyncAwaitCompleter(new P._Future($.Zone__current, [$T]), [$T]);
+    },
+    _asyncStartSync: function(bodyFunction, completer) {
+      bodyFunction.call$2(0, null);
+      completer.isSync = true;
+      return completer._future;
+    },
+    _asyncAwait: function(object, bodyFunction) {
+      P._awaitOnObject(object, bodyFunction);
+    },
+    _asyncReturn: function(object, completer) {
+      completer.complete$1(0, object);
+    },
+    _asyncRethrow: function(object, completer) {
+      completer.completeError$2(H.unwrapException(object), H.getTraceFromException(object));
+    },
+    _awaitOnObject: function(object, bodyFunction) {
+      var future, _null = null,
+        thenCallback = new P._awaitOnObject_closure(bodyFunction),
+        errorCallback = new P._awaitOnObject_closure0(bodyFunction),
+        t1 = J.getInterceptor$(object);
+      if (!!t1.$is_Future)
+        object._thenAwait$1$2(thenCallback, errorCallback, _null);
+      else if (!!t1.$isFuture)
+        object.then$1$2$onError(thenCallback, errorCallback, _null);
+      else {
+        future = new P._Future($.Zone__current, [null]);
+        H.assertSubtypeOfRuntimeType(object, null);
+        future._state = 4;
+        future._resultOrListeners = object;
+        future._thenAwait$1$2(thenCallback, _null, _null);
+      }
+    },
+    _wrapJsFunctionForAsync: function($function) {
+      var $protected = function(fn, ERROR) {
+        return function(errorCode, result) {
+          while (true)
+            try {
+              fn(errorCode, result);
+              break;
+            } catch (error) {
+              result = error;
+              errorCode = ERROR;
+            }
+        };
+      }($function, 1);
+      return $.Zone__current.registerBinaryCallback$3$1(new P._wrapJsFunctionForAsync_closure($protected), P.Null, P.int, null);
+    },
+    _Future__chainForeignFuture: function(source, target) {
+      var e, s, exception;
+      target._state = 1;
+      try {
+        source.then$1$2$onError(new P._Future__chainForeignFuture_closure(target), new P._Future__chainForeignFuture_closure0(target), P.Null);
+      } catch (exception) {
+        e = H.unwrapException(exception);
+        s = H.getTraceFromException(exception);
+        P.scheduleMicrotask(new P._Future__chainForeignFuture_closure1(target, e, s));
+      }
+    },
+    _Future__chainCoreFuture: function(source, target) {
+      var t1, listeners;
+      for (; t1 = source._state, t1 === 2;)
+        source = H.interceptedTypeCheck(source._resultOrListeners, "$is_Future");
+      if (t1 >= 4) {
+        listeners = target._removeListeners$0();
+        target._state = source._state;
+        target._resultOrListeners = source._resultOrListeners;
+        P._Future__propagateToListeners(target, listeners);
+      } else {
+        listeners = H.interceptedTypeCheck(target._resultOrListeners, "$is_FutureListener");
+        target._state = 2;
+        target._resultOrListeners = source;
+        source._prependListeners$1(listeners);
+      }
+    },
+    _Future__propagateToListeners: function(source, listeners) {
+      var _box_0, hasError, asyncError, listeners0, sourceResult, t2, t3, zone, t4, oldZone, current, result, _null = null, _box_1 = {},
+        t1 = _box_1.source = source;
+      for (; true;) {
+        _box_0 = {};
+        hasError = t1._state === 8;
+        if (listeners == null) {
+          if (hasError) {
+            asyncError = H.interceptedTypeCheck(t1._resultOrListeners, "$isAsyncError");
+            P._rootHandleUncaughtError(_null, _null, t1._zone, asyncError.error, asyncError.stackTrace);
+          }
+          return;
+        }
+        for (; listeners0 = listeners._nextListener, listeners0 != null; listeners = listeners0) {
+          listeners._nextListener = null;
+          P._Future__propagateToListeners(_box_1.source, listeners);
+        }
+        t1 = _box_1.source;
+        sourceResult = t1._resultOrListeners;
+        _box_0.listenerHasError = hasError;
+        _box_0.listenerValueOrError = sourceResult;
+        t2 = !hasError;
+        if (t2) {
+          t3 = listeners.state;
+          t3 = (t3 & 1) !== 0 || (t3 & 15) === 8;
+        } else
+          t3 = true;
+        if (t3) {
+          t3 = listeners.result;
+          zone = t3._zone;
+          if (hasError) {
+            t4 = t1._zone === zone;
+            t4 = !(t4 || t4);
+          } else
+            t4 = false;
+          if (t4) {
+            H.interceptedTypeCheck(sourceResult, "$isAsyncError");
+            P._rootHandleUncaughtError(_null, _null, t1._zone, sourceResult.error, sourceResult.stackTrace);
+            return;
+          }
+          oldZone = $.Zone__current;
+          if (oldZone !== zone)
+            $.Zone__current = zone;
+          else
+            oldZone = _null;
+          t1 = listeners.state;
+          if ((t1 & 15) === 8)
+            new P._Future__propagateToListeners_handleWhenCompleteCallback(_box_1, _box_0, listeners, hasError).call$0();
+          else if (t2) {
+            if ((t1 & 1) !== 0)
+              new P._Future__propagateToListeners_handleValueCallback(_box_0, listeners, sourceResult).call$0();
+          } else if ((t1 & 2) !== 0)
+            new P._Future__propagateToListeners_handleError(_box_1, _box_0, listeners).call$0();
+          if (oldZone != null)
+            $.Zone__current = oldZone;
+          t1 = _box_0.listenerValueOrError;
+          if (!!J.getInterceptor$(t1).$isFuture) {
+            if (t1._state >= 4) {
+              current = H.interceptedTypeCheck(t3._resultOrListeners, "$is_FutureListener");
+              t3._resultOrListeners = null;
+              listeners = t3._reverseListeners$1(current);
+              t3._state = t1._state;
+              t3._resultOrListeners = t1._resultOrListeners;
+              _box_1.source = t1;
+              continue;
+            } else
+              P._Future__chainCoreFuture(t1, t3);
+            return;
+          }
+        }
+        result = listeners.result;
+        current = H.interceptedTypeCheck(result._resultOrListeners, "$is_FutureListener");
+        result._resultOrListeners = null;
+        listeners = result._reverseListeners$1(current);
+        t1 = _box_0.listenerHasError;
+        t2 = _box_0.listenerValueOrError;
+        if (!t1) {
+          H.assertSubtypeOfRuntimeType(t2, H.getTypeArgumentByIndex(result, 0));
+          result._state = 4;
+          result._resultOrListeners = t2;
+        } else {
+          H.interceptedTypeCheck(t2, "$isAsyncError");
+          result._state = 8;
+          result._resultOrListeners = t2;
+        }
+        _box_1.source = result;
+        t1 = result;
+      }
+    },
+    _registerErrorHandler: function(errorHandler, zone) {
+      if (H.functionTypeTest(errorHandler, {func: 1, args: [P.Object, P.StackTrace]}))
+        return zone.registerBinaryCallback$3$1(errorHandler, null, P.Object, P.StackTrace);
+      if (H.functionTypeTest(errorHandler, {func: 1, args: [P.Object]}))
+        return H.functionTypeCheck(errorHandler, {func: 1, ret: null, args: [P.Object]});
+      throw H.wrapException(P.ArgumentError$value(errorHandler, "onError", "Error handler must accept one Object or one Object and a StackTrace as arguments, and return a a valid result"));
+    },
+    _microtaskLoop: function() {
+      var t1, t2;
+      for (; t1 = $._nextCallback, t1 != null;) {
+        $._lastPriorityCallback = null;
+        t2 = t1.next;
+        $._nextCallback = t2;
+        if (t2 == null)
+          $._lastCallback = null;
+        t1.callback.call$0();
+      }
+    },
+    _startMicrotaskLoop: function() {
+      $._isInCallbackLoop = true;
+      try {
+        P._microtaskLoop();
+      } finally {
+        $._lastPriorityCallback = null;
+        $._isInCallbackLoop = false;
+        if ($._nextCallback != null)
+          $.$get$_AsyncRun__scheduleImmediateClosure().call$1(P.async___startMicrotaskLoop$closure());
+      }
+    },
+    _scheduleAsyncCallback: function(callback) {
+      var newEntry = new P._AsyncCallbackEntry(callback);
+      if ($._nextCallback == null) {
+        $._nextCallback = $._lastCallback = newEntry;
+        if (!$._isInCallbackLoop)
+          $.$get$_AsyncRun__scheduleImmediateClosure().call$1(P.async___startMicrotaskLoop$closure());
+      } else
+        $._lastCallback = $._lastCallback.next = newEntry;
+    },
+    _schedulePriorityAsyncCallback: function(callback) {
+      var entry, t2,
+        t1 = $._nextCallback;
+      if (t1 == null) {
+        P._scheduleAsyncCallback(callback);
+        $._lastPriorityCallback = $._lastCallback;
+        return;
+      }
+      entry = new P._AsyncCallbackEntry(callback);
+      t2 = $._lastPriorityCallback;
+      if (t2 == null) {
+        entry.next = t1;
+        $._nextCallback = $._lastPriorityCallback = entry;
+      } else {
+        entry.next = t2.next;
+        $._lastPriorityCallback = t2.next = entry;
+        if (entry.next == null)
+          $._lastCallback = entry;
+      }
+    },
+    scheduleMicrotask: function(callback) {
+      var _null = null,
+        currentZone = $.Zone__current;
+      if (C.C__RootZone === currentZone) {
+        P._rootScheduleMicrotask(_null, _null, C.C__RootZone, callback);
+        return;
+      }
+      P._rootScheduleMicrotask(_null, _null, currentZone, H.functionTypeCheck(currentZone.bindCallbackGuarded$1(callback), {func: 1, ret: -1}));
+    },
+    StreamIterator_StreamIterator: function(stream, $T) {
+      if (stream == null)
+        H.throwExpression(new P.ArgumentError(false, null, "stream", "Must not be null"));
+      return new P._StreamIterator([$T]);
+    },
+    _rootHandleUncaughtError: function($self, $parent, zone, error, stackTrace) {
+      var t1 = {};
+      t1.error = error;
+      P._schedulePriorityAsyncCallback(new P._rootHandleUncaughtError_closure(t1, stackTrace));
+    },
+    _rootRun: function($self, $parent, zone, f, $R) {
+      var old,
+        t1 = $.Zone__current;
+      if (t1 === zone)
+        return f.call$0();
+      $.Zone__current = zone;
+      old = t1;
+      try {
+        t1 = f.call$0();
+        return t1;
+      } finally {
+        $.Zone__current = old;
+      }
+    },
+    _rootRunUnary: function($self, $parent, zone, f, arg, $R, $T) {
+      var old,
+        t1 = $.Zone__current;
+      if (t1 === zone)
+        return f.call$1(arg);
+      $.Zone__current = zone;
+      old = t1;
+      try {
+        t1 = f.call$1(arg);
+        return t1;
+      } finally {
+        $.Zone__current = old;
+      }
+    },
+    _rootRunBinary: function($self, $parent, zone, f, arg1, arg2, $R, T1, T2) {
+      var old,
+        t1 = $.Zone__current;
+      if (t1 === zone)
+        return f.call$2(arg1, arg2);
+      $.Zone__current = zone;
+      old = t1;
+      try {
+        t1 = f.call$2(arg1, arg2);
+        return t1;
+      } finally {
+        $.Zone__current = old;
+      }
+    },
+    _rootScheduleMicrotask: function($self, $parent, zone, f) {
+      var t1;
+      H.functionTypeCheck(f, {func: 1, ret: -1});
+      t1 = C.C__RootZone !== zone;
+      if (t1)
+        f = !(!t1 || false) ? zone.bindCallbackGuarded$1(f) : zone.bindCallback$1$1(f, -1);
+      P._scheduleAsyncCallback(f);
+    },
+    _AsyncRun__initializeScheduleImmediate_internalCallback: function _AsyncRun__initializeScheduleImmediate_internalCallback(t0) {
+      this._box_0 = t0;
+    },
+    _AsyncRun__initializeScheduleImmediate_closure: function _AsyncRun__initializeScheduleImmediate_closure(t0, t1, t2) {
+      this._box_0 = t0;
+      this.div = t1;
+      this.span = t2;
+    },
+    _AsyncRun__scheduleImmediateJsOverride_internalCallback: function _AsyncRun__scheduleImmediateJsOverride_internalCallback(t0) {
+      this.callback = t0;
+    },
+    _AsyncRun__scheduleImmediateWithSetImmediate_internalCallback: function _AsyncRun__scheduleImmediateWithSetImmediate_internalCallback(t0) {
+      this.callback = t0;
+    },
+    _TimerImpl: function _TimerImpl() {
+    },
+    _TimerImpl_internalCallback: function _TimerImpl_internalCallback(t0, t1) {
+      this.$this = t0;
+      this.callback = t1;
+    },
+    _AsyncAwaitCompleter: function _AsyncAwaitCompleter(t0, t1) {
+      this._future = t0;
+      this.isSync = false;
+      this.$ti = t1;
+    },
+    _awaitOnObject_closure: function _awaitOnObject_closure(t0) {
+      this.bodyFunction = t0;
+    },
+    _awaitOnObject_closure0: function _awaitOnObject_closure0(t0) {
+      this.bodyFunction = t0;
+    },
+    _wrapJsFunctionForAsync_closure: function _wrapJsFunctionForAsync_closure(t0) {
+      this.$protected = t0;
+    },
+    _Completer: function _Completer() {
+    },
+    _SyncCompleter: function _SyncCompleter(t0, t1) {
+      this.future = t0;
+      this.$ti = t1;
+    },
+    _FutureListener: function _FutureListener(t0, t1, t2, t3, t4) {
+      var _ = this;
+      _._nextListener = null;
+      _.result = t0;
+      _.state = t1;
+      _.callback = t2;
+      _.errorCallback = t3;
+      _.$ti = t4;
+    },
+    _Future: function _Future(t0, t1) {
+      var _ = this;
+      _._state = 0;
+      _._zone = t0;
+      _._resultOrListeners = null;
+      _.$ti = t1;
+    },
+    _Future__addListener_closure: function _Future__addListener_closure(t0, t1) {
+      this.$this = t0;
+      this.listener = t1;
+    },
+    _Future__prependListeners_closure: function _Future__prependListeners_closure(t0, t1) {
+      this._box_0 = t0;
+      this.$this = t1;
+    },
+    _Future__chainForeignFuture_closure: function _Future__chainForeignFuture_closure(t0) {
+      this.target = t0;
+    },
+    _Future__chainForeignFuture_closure0: function _Future__chainForeignFuture_closure0(t0) {
+      this.target = t0;
+    },
+    _Future__chainForeignFuture_closure1: function _Future__chainForeignFuture_closure1(t0, t1, t2) {
+      this.target = t0;
+      this.e = t1;
+      this.s = t2;
+    },
+    _Future__asyncComplete_closure: function _Future__asyncComplete_closure(t0, t1) {
+      this.$this = t0;
+      this.value = t1;
+    },
+    _Future__chainFuture_closure: function _Future__chainFuture_closure(t0, t1) {
+      this.$this = t0;
+      this.value = t1;
+    },
+    _Future__asyncCompleteError_closure: function _Future__asyncCompleteError_closure(t0, t1, t2) {
+      this.$this = t0;
+      this.error = t1;
+      this.stackTrace = t2;
+    },
+    _Future__propagateToListeners_handleWhenCompleteCallback: function _Future__propagateToListeners_handleWhenCompleteCallback(t0, t1, t2, t3) {
+      var _ = this;
+      _._box_1 = t0;
+      _._box_0 = t1;
+      _.listener = t2;
+      _.hasError = t3;
+    },
+    _Future__propagateToListeners_handleWhenCompleteCallback_closure: function _Future__propagateToListeners_handleWhenCompleteCallback_closure(t0) {
+      this.originalSource = t0;
+    },
+    _Future__propagateToListeners_handleValueCallback: function _Future__propagateToListeners_handleValueCallback(t0, t1, t2) {
+      this._box_0 = t0;
+      this.listener = t1;
+      this.sourceResult = t2;
+    },
+    _Future__propagateToListeners_handleError: function _Future__propagateToListeners_handleError(t0, t1, t2) {
+      this._box_1 = t0;
+      this._box_0 = t1;
+      this.listener = t2;
+    },
+    _AsyncCallbackEntry: function _AsyncCallbackEntry(t0) {
+      this.callback = t0;
+      this.next = null;
+    },
+    Stream: function Stream() {
+    },
+    Stream_length_closure: function Stream_length_closure(t0, t1) {
+      this._box_0 = t0;
+      this.$this = t1;
+    },
+    Stream_length_closure0: function Stream_length_closure0(t0, t1) {
+      this._box_0 = t0;
+      this.future = t1;
+    },
+    StreamSubscription: function StreamSubscription() {
+    },
+    _StreamIterator: function _StreamIterator(t0) {
+      this.$ti = t0;
+    },
+    AsyncError: function AsyncError(t0, t1) {
+      this.error = t0;
+      this.stackTrace = t1;
+    },
+    _Zone: function _Zone() {
+    },
+    _rootHandleUncaughtError_closure: function _rootHandleUncaughtError_closure(t0, t1) {
+      this._box_0 = t0;
+      this.stackTrace = t1;
+    },
+    _RootZone: function _RootZone() {
+    },
+    _RootZone_bindCallback_closure: function _RootZone_bindCallback_closure(t0, t1, t2) {
+      this.$this = t0;
+      this.f = t1;
+      this.R = t2;
+    },
+    _RootZone_bindCallbackGuarded_closure: function _RootZone_bindCallbackGuarded_closure(t0, t1) {
+      this.$this = t0;
+      this.f = t1;
+    },
+    _RootZone_bindUnaryCallbackGuarded_closure: function _RootZone_bindUnaryCallbackGuarded_closure(t0, t1, t2) {
+      this.$this = t0;
+      this.f = t1;
+      this.T = t2;
+    },
+    HashMap_HashMap: function($K, $V) {
+      return new P._HashMap([$K, $V]);
+    },
+    _HashMap__getTableEntry: function(table, key) {
+      var entry = table[key];
+      return entry === table ? null : entry;
+    },
+    _HashMap__setTableEntry: function(table, key, value) {
+      if (value == null)
+        table[key] = table;
+      else
+        table[key] = value;
+    },
+    _HashMap__newHashTable: function() {
+      var table = Object.create(null);
+      P._HashMap__setTableEntry(table, "<non-identifier-key>", table);
+      delete table["<non-identifier-key>"];
+      return table;
+    },
+    IterableBase_iterableToShortString: function(iterable, leftDelimiter, rightDelimiter) {
+      var parts, t1;
+      if (P._isToStringVisiting(iterable)) {
+        if (leftDelimiter === "(" && rightDelimiter === ")")
+          return "(...)";
+        return leftDelimiter + "..." + rightDelimiter;
+      }
+      parts = H.setRuntimeTypeInfo([], [P.String]);
+      C.JSArray_methods.add$1($._toStringVisiting, iterable);
+      try {
+        P._iterablePartsToStrings(iterable, parts);
+      } finally {
+        if (0 >= $._toStringVisiting.length)
+          return H.ioore($._toStringVisiting, -1);
+        $._toStringVisiting.pop();
+      }
+      t1 = P.StringBuffer__writeAll(leftDelimiter, H.listSuperNativeTypeCheck(parts, "$isIterable"), ", ") + rightDelimiter;
+      return t1.charCodeAt(0) == 0 ? t1 : t1;
+    },
+    IterableBase_iterableToFullString: function(iterable, leftDelimiter, rightDelimiter) {
+      var buffer, t1;
+      if (P._isToStringVisiting(iterable))
+        return leftDelimiter + "..." + rightDelimiter;
+      buffer = new P.StringBuffer(leftDelimiter);
+      C.JSArray_methods.add$1($._toStringVisiting, iterable);
+      try {
+        t1 = buffer;
+        t1._contents = P.StringBuffer__writeAll(t1._contents, iterable, ", ");
+      } finally {
+        if (0 >= $._toStringVisiting.length)
+          return H.ioore($._toStringVisiting, -1);
+        $._toStringVisiting.pop();
+      }
+      buffer._contents += rightDelimiter;
+      t1 = buffer._contents;
+      return t1.charCodeAt(0) == 0 ? t1 : t1;
+    },
+    _isToStringVisiting: function(o) {
+      var t1, i;
+      for (t1 = $._toStringVisiting.length, i = 0; i < t1; ++i)
+        if (o === $._toStringVisiting[i])
+          return true;
+      return false;
+    },
+    _iterablePartsToStrings: function(iterable, parts) {
+      var next, ultimateString, penultimateString, penultimate, ultimate, ultimate0, elision,
+        it = iterable.get$iterator(iterable),
+        $length = 0, count = 0;
+      while (true) {
+        if (!($length < 80 || count < 3))
+          break;
+        if (!it.moveNext$0())
+          return;
+        next = H.S(it.get$current());
+        C.JSArray_methods.add$1(parts, next);
+        $length += next.length + 2;
+        ++count;
+      }
+      if (!it.moveNext$0()) {
+        if (count <= 5)
+          return;
+        if (0 >= parts.length)
+          return H.ioore(parts, -1);
+        ultimateString = parts.pop();
+        if (0 >= parts.length)
+          return H.ioore(parts, -1);
+        penultimateString = parts.pop();
+      } else {
+        penultimate = it.get$current();
+        ++count;
+        if (!it.moveNext$0()) {
+          if (count <= 4) {
+            C.JSArray_methods.add$1(parts, H.S(penultimate));
+            return;
+          }
+          ultimateString = H.S(penultimate);
+          if (0 >= parts.length)
+            return H.ioore(parts, -1);
+          penultimateString = parts.pop();
+          $length += ultimateString.length + 2;
+        } else {
+          ultimate = it.get$current();
+          ++count;
+          for (; it.moveNext$0(); penultimate = ultimate, ultimate = ultimate0) {
+            ultimate0 = it.get$current();
+            ++count;
+            if (count > 100) {
+              while (true) {
+                if (!($length > 75 && count > 3))
+                  break;
+                if (0 >= parts.length)
+                  return H.ioore(parts, -1);
+                $length -= parts.pop().length + 2;
+                --count;
+              }
+              C.JSArray_methods.add$1(parts, "...");
+              return;
+            }
+          }
+          penultimateString = H.S(penultimate);
+          ultimateString = H.S(ultimate);
+          $length += ultimateString.length + penultimateString.length + 4;
+        }
+      }
+      if (count > parts.length + 2) {
+        $length += 5;
+        elision = "...";
+      } else
+        elision = null;
+      while (true) {
+        if (!($length > 80 && parts.length > 3))
+          break;
+        if (0 >= parts.length)
+          return H.ioore(parts, -1);
+        $length -= parts.pop().length + 2;
+        if (elision == null) {
+          $length += 5;
+          elision = "...";
+        }
+      }
+      if (elision != null)
+        C.JSArray_methods.add$1(parts, elision);
+      C.JSArray_methods.add$1(parts, penultimateString);
+      C.JSArray_methods.add$1(parts, ultimateString);
+    },
+    MapBase_mapToString: function(m) {
+      var result, t1 = {};
+      if (P._isToStringVisiting(m))
+        return "{...}";
+      result = new P.StringBuffer("");
+      try {
+        C.JSArray_methods.add$1($._toStringVisiting, m);
+        result._contents += "{";
+        t1.first = true;
+        m.forEach$1(0, new P.MapBase_mapToString_closure(t1, result));
+        result._contents += "}";
+      } finally {
+        if (0 >= $._toStringVisiting.length)
+          return H.ioore($._toStringVisiting, -1);
+        $._toStringVisiting.pop();
+      }
+      t1 = result._contents;
+      return t1.charCodeAt(0) == 0 ? t1 : t1;
+    },
+    _HashMap: function _HashMap(t0) {
+      var _ = this;
+      _._collection$_length = 0;
+      _._keys = _._rest = _._nums = _._strings = null;
+      _.$ti = t0;
+    },
+    _HashMapKeyIterable: function _HashMapKeyIterable(t0, t1) {
+      this._map = t0;
+      this.$ti = t1;
+    },
+    _HashMapKeyIterator: function _HashMapKeyIterator(t0, t1, t2) {
+      var _ = this;
+      _._map = t0;
+      _._keys = t1;
+      _._offset = 0;
+      _._collection$_current = null;
+      _.$ti = t2;
+    },
+    MapBase: function MapBase() {
+    },
+    MapBase_mapToString_closure: function MapBase_mapToString_closure(t0, t1) {
+      this._box_0 = t0;
+      this.result = t1;
+    },
+    MapMixin: function MapMixin() {
+    },
     Error__objectToString: function(object) {
       if (object instanceof H.Closure)
         return object.toString$0(0);
@@ -1326,10 +2294,10 @@
       return P.Error__objectToString(object);
     },
     ArgumentError$value: function(value, $name, message) {
-      return new P.ArgumentError(value, $name, message);
+      return new P.ArgumentError(true, value, $name, message);
     },
     RangeError$value: function(value, $name) {
-      return new P.RangeError(value, $name, "Value not in range");
+      return new P.RangeError(null, null, true, value, $name, "Value not in range");
     },
     UnsupportedError$: function(message) {
       return new P.UnsupportedError(message);
@@ -1337,30 +2305,45 @@
     UnimplementedError$: function(message) {
       return new P.UnimplementedError(message);
     },
+    StateError$: function(message) {
+      return new P.StateError(message);
+    },
+    ConcurrentModificationError$: function(modifiedObject) {
+      return new P.ConcurrentModificationError(modifiedObject);
+    },
     bool: function bool() {
     },
     double: function double() {
     },
     Error: function Error() {
     },
+    AssertionError: function AssertionError() {
+    },
     NullThrownError: function NullThrownError() {
     },
-    ArgumentError: function ArgumentError(t0, t1, t2) {
-      this.invalidValue = t0;
-      this.name = t1;
-      this.message = t2;
-    },
-    RangeError: function RangeError(t0, t1, t2) {
-      this.invalidValue = t0;
-      this.name = t1;
-      this.message = t2;
-    },
-    IndexError: function IndexError(t0, t1, t2, t3) {
+    ArgumentError: function ArgumentError(t0, t1, t2, t3) {
       var _ = this;
-      _.length = t0;
+      _._hasValue = t0;
       _.invalidValue = t1;
       _.name = t2;
       _.message = t3;
+    },
+    RangeError: function RangeError(t0, t1, t2, t3, t4, t5) {
+      var _ = this;
+      _.start = t0;
+      _.end = t1;
+      _._hasValue = t2;
+      _.invalidValue = t3;
+      _.name = t4;
+      _.message = t5;
+    },
+    IndexError: function IndexError(t0, t1, t2, t3, t4) {
+      var _ = this;
+      _.length = t0;
+      _._hasValue = t1;
+      _.invalidValue = t2;
+      _.name = t3;
+      _.message = t4;
     },
     UnsupportedError: function UnsupportedError(t0) {
       this.message = t0;
@@ -1368,13 +2351,23 @@
     UnimplementedError: function UnimplementedError(t0) {
       this.message = t0;
     },
+    StateError: function StateError(t0) {
+      this.message = t0;
+    },
     ConcurrentModificationError: function ConcurrentModificationError(t0) {
       this.modifiedObject = t0;
+    },
+    StackOverflowError: function StackOverflowError() {
     },
     CyclicInitializationError: function CyclicInitializationError(t0) {
       this.variableName = t0;
     },
+    _Exception: function _Exception(t0) {
+      this.message = t0;
+    },
     int: function int() {
+    },
+    Iterable: function Iterable() {
     },
     List: function List() {
     },
@@ -1384,42 +2377,32 @@
     },
     Object: function Object() {
     },
+    StackTrace: function StackTrace() {
+    },
     String: function String() {
     },
     StringBuffer: function StringBuffer(t0) {
       this._contents = t0;
     },
     SvgElement: function SvgElement() {
-    },
-    IterableBase_iterableToFullString: function(iterable, leftDelimiter, rightDelimiter) {
-      var buffer, t1;
-      if (P._isToStringVisiting(iterable))
-        return leftDelimiter + "..." + rightDelimiter;
-      buffer = new P.StringBuffer(leftDelimiter);
-      C.JSArray_methods.add$1($._toStringVisiting, iterable);
-      try {
-        t1 = buffer;
-        t1._contents = P.StringBuffer__writeAll(t1._contents, iterable, ", ");
-      } finally {
-        if (0 >= $._toStringVisiting.length)
-          return H.ioore($._toStringVisiting, -1);
-        $._toStringVisiting.pop();
-      }
-      buffer._contents += rightDelimiter;
-      t1 = buffer._contents;
-      return t1.charCodeAt(0) == 0 ? t1 : t1;
-    },
-    _isToStringVisiting: function(o) {
-      var t1, i;
-      for (t1 = $._toStringVisiting.length, i = 0; i < t1; ++i)
-        if (o === $._toStringVisiting[i])
-          return true;
-      return false;
     }
   },
   W = {
-    querySelector: function(selectors) {
-      return document.querySelector(selectors);
+    _EventStreamSubscription$: function(_target, _eventType, onData, _useCapture, $T) {
+      var t1 = W._wrapZone(new W._EventStreamSubscription_closure(onData), W.Event),
+        t2 = t1 != null;
+      if (t2 && true) {
+        H.functionTypeCheck(t1, {func: 1, args: [W.Event]});
+        if (t2)
+          C.Window_methods._addEventListener$3(_target, _eventType, t1, false);
+      }
+      return new W._EventStreamSubscription(_target, _eventType, t1, false, [$T]);
+    },
+    _wrapZone: function(callback, $T) {
+      var t1 = $.Zone__current;
+      if (t1 === C.C__RootZone)
+        return callback;
+      return t1.bindUnaryCallbackGuarded$1$1(callback, $T);
     },
     HtmlElement: function HtmlElement() {
     },
@@ -1435,28 +2418,74 @@
     },
     Element: function Element() {
     },
+    Event: function Event() {
+    },
     EventTarget: function EventTarget() {
     },
     FormElement: function FormElement() {
     },
+    KeyboardEvent: function KeyboardEvent() {
+    },
     Node: function Node() {
     },
     SelectElement: function SelectElement() {
+    },
+    UIEvent: function UIEvent() {
+    },
+    Window: function Window() {
+    },
+    Window_animationFrame_closure: function Window_animationFrame_closure(t0) {
+      this.completer = t0;
+    },
+    _EventStream: function _EventStream(t0, t1, t2, t3) {
+      var _ = this;
+      _._html$_target = t0;
+      _._eventType = t1;
+      _._useCapture = t2;
+      _.$ti = t3;
+    },
+    _EventStreamSubscription: function _EventStreamSubscription(t0, t1, t2, t3, t4) {
+      var _ = this;
+      _._html$_target = t0;
+      _._eventType = t1;
+      _._onData = t2;
+      _._useCapture = t3;
+      _.$ti = t4;
+    },
+    _EventStreamSubscription_closure: function _EventStreamSubscription_closure(t0) {
+      this.onData = t0;
     }
   },
   E = {
     main: function() {
-      var t1, t2, t3;
-      document.querySelector("#text");
-      t1 = $.$get$ctx();
+      var t1 = document,
+        t2 = t1.querySelector("#canvas");
+      J.focus$0$x(t2);
+      H.interceptedTypeCheck(t2, "$isCanvasElement");
+      $.canvas = t2;
+      $.ctx = H.interceptedTypeCheck(C.CanvasElement_methods.getContext$1(t2, "2d"), "$isCanvasRenderingContext2D");
+      $.keyboard = E.Keyboard$();
+      t1.querySelector("#text");
+      t1 = new E.Game();
+      E.clear();
+      t1.player1 = E.Player$($.$get$Player_player1InitialPosition(), "player1");
+      t1.player2 = E.Player$($.$get$Player_player2InitialPosition(), "player2");
+      t2 = new E.Point();
+      t2.y = t2.x = 50;
+      t1.ball = new E.Ball(t2, $.$get$Ball_DOWN_RIGHT());
+      t1.run$0();
+    },
+    clear: function() {
+      var t2, t3,
+        t1 = $.ctx;
       t1.fillStyle = "black";
-      t2 = $.$get$canvas();
+      t2 = $.canvas;
       t1.fillRect(0, 0, t2.width, t2.height);
-      t2 = $.$get$canvas().width;
+      t2 = $.canvas.width;
       if (typeof t2 !== "number")
         return t2.$tdiv();
       t2 = C.JSInt_methods._tdivFast$1(t2, 2);
-      t1 = $.$get$ctx();
+      t1 = $.ctx;
       t1.strokeStyle = "#00CC00";
       t3 = [P.num];
       t3 = H.assertSubtype(H.setRuntimeTypeInfo([20, 20], t3), "$isList", t3, "$asList");
@@ -1468,8 +2497,63 @@
       t1.lineWidth = 10;
       t1.beginPath();
       t1.moveTo(t2, 0);
-      t1.lineTo(t2, $.$get$canvas().height);
+      t1.lineTo(t2, $.canvas.height);
       t1.stroke();
+    },
+    Keyboard$: function() {
+      var t1 = new E.Keyboard(P.HashMap_HashMap(P.int, P.num));
+      t1.Keyboard$0();
+      return t1;
+    },
+    Point$: function(x, y) {
+      var t1 = new E.Point();
+      t1.x = x;
+      t1.y = y;
+      return t1;
+    },
+    Player$: function(_position, _name) {
+      var t1 = new E.Player(_position, _name);
+      if (_name === "player1") {
+        t1._keyUp = 81;
+        t1._keyDown = 65;
+      } else if (_name === "player2") {
+        t1._keyUp = 80;
+        t1._keyDown = 76;
+      }
+      t1._dir = $.$get$Player_STAND_STILL();
+      t1.draw$0();
+      return t1;
+    },
+    Keyboard: function Keyboard(t0) {
+      this.keys = t0;
+    },
+    Keyboard_closure: function Keyboard_closure(t0) {
+      this.$this = t0;
+    },
+    Keyboard__closure: function Keyboard__closure(t0) {
+      this.event = t0;
+    },
+    Keyboard_closure0: function Keyboard_closure0(t0) {
+      this.$this = t0;
+    },
+    Point: function Point() {
+      this.y = this.x = null;
+    },
+    Ball: function Ball(t0, t1) {
+      this._position = t0;
+      this.dir = t1;
+    },
+    Player: function Player(t0, t1) {
+      var _ = this;
+      _._keyDown = _._keyUp = null;
+      _._position = t0;
+      _._dir = null;
+      _._name = t1;
+    },
+    Game: function Game() {
+      var _ = this;
+      _._lastTimeStamp = 0;
+      _.ball = _.player2 = _.player1 = null;
     }
   };
   var holders = [C, H, J, P, W, E];
@@ -1477,6 +2561,12 @@
   var $ = {};
   H.JS_CONST.prototype = {};
   J.Interceptor.prototype = {
+    $eq: function(receiver, other) {
+      return receiver === other;
+    },
+    get$hashCode: function(receiver) {
+      return H.Primitives_objectHashCode(receiver);
+    },
     toString$0: function(receiver) {
       return "Instance of '" + H.S(H.Primitives_objectTypeName(receiver)) + "'";
     }
@@ -1485,14 +2575,27 @@
     toString$0: function(receiver) {
       return String(receiver);
     },
+    get$hashCode: function(receiver) {
+      return receiver ? 519018 : 218159;
+    },
     $isbool: 1
   };
   J.JSNull.prototype = {
+    $eq: function(receiver, other) {
+      return null == other;
+    },
     toString$0: function(receiver) {
       return "null";
-    }
+    },
+    get$hashCode: function(receiver) {
+      return 0;
+    },
+    $isNull: 1
   };
   J.JavaScriptObject.prototype = {
+    get$hashCode: function(receiver) {
+      return 0;
+    },
     toString$0: function(receiver) {
       return String(receiver);
     }
@@ -1508,7 +2611,8 @@
     },
     $signature: function() {
       return {func: 1, opt: [,,,,,,,,,,,,,,,,]};
-    }
+    },
+    $isFunction: 1
   };
   J.JSArray.prototype = {
     add$1: function(receiver, value) {
@@ -1519,6 +2623,9 @@
     },
     toString$0: function(receiver) {
       return P.IterableBase_iterableToFullString(receiver, "[", "]");
+    },
+    get$hashCode: function(receiver) {
+      return H.Primitives_objectHashCode(receiver);
     },
     get$length: function(receiver) {
       return receiver.length;
@@ -1554,6 +2661,17 @@
       else
         return "" + receiver;
     },
+    get$hashCode: function(receiver) {
+      var absolute, floorLog2, factor, scaled,
+        intValue = receiver | 0;
+      if (receiver === intValue)
+        return 536870911 & intValue;
+      absolute = Math.abs(receiver);
+      floorLog2 = Math.log(absolute) / 0.6931471805599453 | 0;
+      factor = Math.pow(2, floorLog2);
+      scaled = absolute < 1 ? absolute / factor : factor / absolute;
+      return 536870911 & ((scaled * 9007199254740992 | 0) + (scaled * 3542243181176521 | 0)) * 599197 + floorLog2 * 1259;
+    },
     _tdivFast$1: function(receiver, other) {
       return (receiver | 0) === receiver ? receiver / other | 0 : this._tdivSlow$1(receiver, other);
     },
@@ -1567,6 +2685,19 @@
       } else if (quotient > -1 / 0)
         return Math.ceil(quotient);
       throw H.wrapException(P.UnsupportedError$("Result of truncating division is " + H.S(quotient) + ": " + H.S(receiver) + " ~/ " + other));
+    },
+    _shrOtherPositive$1: function(receiver, other) {
+      var t1;
+      if (receiver > 0)
+        t1 = this._shrBothPositive$1(receiver, other);
+      else {
+        t1 = other > 31 ? 31 : other;
+        t1 = receiver >> t1 >>> 0;
+      }
+      return t1;
+    },
+    _shrBothPositive$1: function(receiver, other) {
+      return other > 31 ? 0 : receiver >>> other;
     },
     $isnum: 1
   };
@@ -1586,10 +2717,96 @@
     toString$0: function(receiver) {
       return receiver;
     },
+    get$hashCode: function(receiver) {
+      var t1, hash, i;
+      for (t1 = receiver.length, hash = 0, i = 0; i < t1; ++i) {
+        hash = 536870911 & hash + receiver.charCodeAt(i);
+        hash = 536870911 & hash + ((524287 & hash) << 10);
+        hash ^= hash >> 6;
+      }
+      hash = 536870911 & hash + ((67108863 & hash) << 3);
+      hash ^= hash >> 11;
+      return 536870911 & hash + ((16383 & hash) << 15);
+    },
     get$length: function(receiver) {
       return receiver.length;
     },
     $isString: 1
+  };
+  H.EfficientLengthIterable.prototype = {};
+  H.TypeErrorDecoder.prototype = {
+    matchTypeError$1: function(message) {
+      var result, t1, _this = this,
+        match = new RegExp(_this._pattern).exec(message);
+      if (match == null)
+        return;
+      result = Object.create(null);
+      t1 = _this._arguments;
+      if (t1 !== -1)
+        result.arguments = match[t1 + 1];
+      t1 = _this._argumentsExpr;
+      if (t1 !== -1)
+        result.argumentsExpr = match[t1 + 1];
+      t1 = _this._expr;
+      if (t1 !== -1)
+        result.expr = match[t1 + 1];
+      t1 = _this._method;
+      if (t1 !== -1)
+        result.method = match[t1 + 1];
+      t1 = _this._receiver;
+      if (t1 !== -1)
+        result.receiver = match[t1 + 1];
+      return result;
+    }
+  };
+  H.NullError.prototype = {
+    toString$0: function(_) {
+      var t1 = this._method;
+      if (t1 == null)
+        return "NoSuchMethodError: " + H.S(this._message);
+      return "NoSuchMethodError: method not found: '" + t1 + "' on null";
+    }
+  };
+  H.JsNoSuchMethodError.prototype = {
+    toString$0: function(_) {
+      var t2, _this = this,
+        _s38_ = "NoSuchMethodError: method not found: '",
+        t1 = _this._method;
+      if (t1 == null)
+        return "NoSuchMethodError: " + H.S(_this._message);
+      t2 = _this._receiver;
+      if (t2 == null)
+        return _s38_ + t1 + "' (" + H.S(_this._message) + ")";
+      return _s38_ + t1 + "' on '" + t2 + "' (" + H.S(_this._message) + ")";
+    }
+  };
+  H.UnknownJsTypeError.prototype = {
+    toString$0: function(_) {
+      var t1 = this._message;
+      return t1.length === 0 ? "Error" : "Error: " + t1;
+    }
+  };
+  H.ExceptionAndStackTrace.prototype = {};
+  H.unwrapException_saveStackTrace.prototype = {
+    call$1: function(error) {
+      if (!!J.getInterceptor$(error).$isError)
+        if (error.$thrownJsError == null)
+          error.$thrownJsError = this.ex;
+      return error;
+    },
+    $signature: 3
+  };
+  H._StackTrace.prototype = {
+    toString$0: function(_) {
+      var trace,
+        t1 = this._trace;
+      if (t1 != null)
+        return t1;
+      t1 = this._exception;
+      trace = t1 !== null && typeof t1 === "object" ? t1.stack : null;
+      return this._trace = trace == null ? "" : trace;
+    },
+    $isStackTrace: 1
   };
   H.Closure.prototype = {
     toString$0: function(_) {
@@ -1597,6 +2814,7 @@
         $name = $constructor == null ? null : $constructor.name;
       return "Closure '" + H.unminifyOrTag($name == null ? "unknown" : $name) + "'";
     },
+    $isFunction: 1,
     get$$call: function() {
       return this;
     },
@@ -1614,11 +2832,30 @@
     }
   };
   H.BoundClosure.prototype = {
+    $eq: function(_, other) {
+      var _this = this;
+      if (other == null)
+        return false;
+      if (_this === other)
+        return true;
+      if (!(other instanceof H.BoundClosure))
+        return false;
+      return _this._self === other._self && _this._target === other._target && _this._receiver === other._receiver;
+    },
+    get$hashCode: function(_) {
+      var receiverHashCode,
+        t1 = this._receiver;
+      if (t1 == null)
+        receiverHashCode = H.Primitives_objectHashCode(this._self);
+      else
+        receiverHashCode = typeof t1 !== "object" ? J.get$hashCode$(t1) : H.Primitives_objectHashCode(t1);
+      return (receiverHashCode ^ H.Primitives_objectHashCode(this._target)) >>> 0;
+    },
     toString$0: function(_) {
       var receiver = this._receiver;
       if (receiver == null)
         receiver = this._self;
-      return "Closure '" + H.S(this._name) + "' of " + ("Instance of '" + H.S(H.Primitives_objectTypeName(receiver)) + "'");
+      return "Closure '" + H.S(this.__js_helper$_name) + "' of " + ("Instance of '" + H.S(H.Primitives_objectTypeName(receiver)) + "'");
     }
   };
   H.TypeErrorImplementation.prototype = {
@@ -1631,29 +2868,864 @@
       return "RuntimeError: " + this.message;
     }
   };
+  H._AssertionError.prototype = {
+    toString$0: function(_) {
+      return "Assertion failed: " + P.Error_safeToString(this.message);
+    }
+  };
   H.initHooks_closure.prototype = {
     call$1: function(o) {
       return this.getTag(o);
     },
-    $signature: 0
+    $signature: 3
   };
   H.initHooks_closure0.prototype = {
     call$2: function(o, tag) {
       return this.getUnknownTag(o, tag);
-    }
+    },
+    $signature: 6
   };
   H.initHooks_closure1.prototype = {
     call$1: function(tag) {
       return this.prototypeForTag(H.stringTypeCheck(tag));
+    },
+    $signature: 7
+  };
+  P._AsyncRun__initializeScheduleImmediate_internalCallback.prototype = {
+    call$1: function(_) {
+      var t1 = this._box_0,
+        f = t1.storedCallback;
+      t1.storedCallback = null;
+      f.call$0();
+    },
+    $signature: 4
+  };
+  P._AsyncRun__initializeScheduleImmediate_closure.prototype = {
+    call$1: function(callback) {
+      var t1, t2;
+      this._box_0.storedCallback = H.functionTypeCheck(callback, {func: 1, ret: -1});
+      t1 = this.div;
+      t2 = this.span;
+      t1.firstChild ? t1.removeChild(t2) : t1.appendChild(t2);
+    },
+    $signature: 8
+  };
+  P._AsyncRun__scheduleImmediateJsOverride_internalCallback.prototype = {
+    call$0: function() {
+      this.callback.call$0();
+    },
+    $signature: 0
+  };
+  P._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback.prototype = {
+    call$0: function() {
+      this.callback.call$0();
+    },
+    $signature: 0
+  };
+  P._TimerImpl.prototype = {
+    _TimerImpl$2: function(milliseconds, callback) {
+      if (self.setTimeout != null)
+        self.setTimeout(H.convertDartClosureToJS(new P._TimerImpl_internalCallback(this, callback), 0), milliseconds);
+      else
+        throw H.wrapException(P.UnsupportedError$("`setTimeout()` not found."));
     }
   };
-  P.bool.prototype = {
+  P._TimerImpl_internalCallback.prototype = {
+    call$0: function() {
+      this.callback.call$0();
+    },
+    $signature: 1
+  };
+  P._AsyncAwaitCompleter.prototype = {
+    complete$1: function(_, value) {
+      var t2, t3, _this = this,
+        t1 = H.getTypeArgumentByIndex(_this, 0);
+      H.futureOrCheck(value, {futureOr: 1, type: t1});
+      t2 = !_this.isSync || H.checkSubtype(value, "$isFuture", _this.$ti, "$asFuture");
+      t3 = _this._future;
+      if (t2)
+        t3._asyncComplete$1(value);
+      else
+        t3._completeWithValue$1(H.assertSubtypeOfRuntimeType(value, t1));
+    },
+    completeError$2: function(e, st) {
+      var t1 = this._future;
+      if (this.isSync)
+        t1._completeError$2(e, st);
+      else
+        t1._asyncCompleteError$2(e, st);
+    }
+  };
+  P._awaitOnObject_closure.prototype = {
+    call$1: function(result) {
+      return this.bodyFunction.call$2(0, result);
+    },
+    $signature: 9
+  };
+  P._awaitOnObject_closure0.prototype = {
+    call$2: function(error, stackTrace) {
+      this.bodyFunction.call$2(1, new H.ExceptionAndStackTrace(error, H.interceptedTypeCheck(stackTrace, "$isStackTrace")));
+    },
+    $signature: 10
+  };
+  P._wrapJsFunctionForAsync_closure.prototype = {
+    call$2: function(errorCode, result) {
+      this.$protected(H.intTypeCheck(errorCode), result);
+    },
+    $signature: 11
+  };
+  P._Completer.prototype = {
+    completeError$2: function(error, stackTrace) {
+      var t1;
+      if (error == null)
+        error = new P.NullThrownError();
+      t1 = this.future;
+      if (t1._state !== 0)
+        throw H.wrapException(P.StateError$("Future already completed"));
+      t1._completeError$2(error, stackTrace);
+    }
+  };
+  P._SyncCompleter.prototype = {
+    complete$1: function(_, value) {
+      var t1;
+      H.futureOrCheck(value, {futureOr: 1, type: H.getTypeArgumentByIndex(this, 0)});
+      t1 = this.future;
+      if (t1._state !== 0)
+        throw H.wrapException(P.StateError$("Future already completed"));
+      t1._complete$1(value);
+    }
+  };
+  P._FutureListener.prototype = {
+    matchesErrorTest$1: function(asyncError) {
+      if ((this.state & 15) !== 6)
+        return true;
+      return this.result._zone.runUnary$2$2(H.functionTypeCheck(this.callback, {func: 1, ret: P.bool, args: [P.Object]}), asyncError.error, P.bool, P.Object);
+    },
+    handleError$1: function(asyncError) {
+      var errorCallback = this.errorCallback,
+        t1 = P.Object,
+        t2 = {futureOr: 1, type: H.getTypeArgumentByIndex(this, 1)},
+        t3 = this.result._zone;
+      if (H.functionTypeTest(errorCallback, {func: 1, args: [P.Object, P.StackTrace]}))
+        return H.futureOrCheck(t3.runBinary$3$3(errorCallback, asyncError.error, asyncError.stackTrace, null, t1, P.StackTrace), t2);
+      else
+        return H.futureOrCheck(t3.runUnary$2$2(H.functionTypeCheck(errorCallback, {func: 1, args: [P.Object]}), asyncError.error, null, t1), t2);
+    }
+  };
+  P._Future.prototype = {
+    then$1$2$onError: function(f, onError, $R) {
+      var currentZone, result, t2,
+        t1 = H.getTypeArgumentByIndex(this, 0);
+      H.functionTypeCheck(f, {func: 1, ret: {futureOr: 1, type: $R}, args: [t1]});
+      currentZone = $.Zone__current;
+      if (currentZone !== C.C__RootZone) {
+        H.functionTypeCheck(f, {func: 1, ret: {futureOr: 1, type: $R}, args: [t1]});
+        if (onError != null)
+          onError = P._registerErrorHandler(onError, currentZone);
+      }
+      result = new P._Future($.Zone__current, [$R]);
+      t2 = onError == null ? 1 : 3;
+      this._addListener$1(new P._FutureListener(result, t2, f, onError, [t1, $R]));
+      return result;
+    },
+    then$1$1: function(f, $R) {
+      return this.then$1$2$onError(f, null, $R);
+    },
+    _thenAwait$1$2: function(f, onError, $E) {
+      var result,
+        t1 = H.getTypeArgumentByIndex(this, 0);
+      H.functionTypeCheck(f, {func: 1, ret: {futureOr: 1, type: $E}, args: [t1]});
+      result = new P._Future($.Zone__current, [$E]);
+      this._addListener$1(new P._FutureListener(result, (onError == null ? 1 : 3) | 16, f, onError, [t1, $E]));
+      return result;
+    },
+    _addListener$1: function(listener) {
+      var source, _this = this,
+        t1 = _this._state;
+      if (t1 <= 1) {
+        listener._nextListener = H.interceptedTypeCheck(_this._resultOrListeners, "$is_FutureListener");
+        _this._resultOrListeners = listener;
+      } else {
+        if (t1 === 2) {
+          source = H.interceptedTypeCheck(_this._resultOrListeners, "$is_Future");
+          t1 = source._state;
+          if (t1 < 4) {
+            source._addListener$1(listener);
+            return;
+          }
+          _this._state = t1;
+          _this._resultOrListeners = source._resultOrListeners;
+        }
+        P._rootScheduleMicrotask(null, null, _this._zone, H.functionTypeCheck(new P._Future__addListener_closure(_this, listener), {func: 1, ret: -1}));
+      }
+    },
+    _prependListeners$1: function(listeners) {
+      var t1, existingListeners, cursor, cursor0, source, _this = this, _box_0 = {};
+      _box_0.listeners = listeners;
+      if (listeners == null)
+        return;
+      t1 = _this._state;
+      if (t1 <= 1) {
+        existingListeners = H.interceptedTypeCheck(_this._resultOrListeners, "$is_FutureListener");
+        cursor = _this._resultOrListeners = listeners;
+        if (existingListeners != null) {
+          for (; cursor0 = cursor._nextListener, cursor0 != null; cursor = cursor0)
+            ;
+          cursor._nextListener = existingListeners;
+        }
+      } else {
+        if (t1 === 2) {
+          source = H.interceptedTypeCheck(_this._resultOrListeners, "$is_Future");
+          t1 = source._state;
+          if (t1 < 4) {
+            source._prependListeners$1(listeners);
+            return;
+          }
+          _this._state = t1;
+          _this._resultOrListeners = source._resultOrListeners;
+        }
+        _box_0.listeners = _this._reverseListeners$1(listeners);
+        P._rootScheduleMicrotask(null, null, _this._zone, H.functionTypeCheck(new P._Future__prependListeners_closure(_box_0, _this), {func: 1, ret: -1}));
+      }
+    },
+    _removeListeners$0: function() {
+      var current = H.interceptedTypeCheck(this._resultOrListeners, "$is_FutureListener");
+      this._resultOrListeners = null;
+      return this._reverseListeners$1(current);
+    },
+    _reverseListeners$1: function(listeners) {
+      var current, prev, next;
+      for (current = listeners, prev = null; current != null; prev = current, current = next) {
+        next = current._nextListener;
+        current._nextListener = prev;
+      }
+      return prev;
+    },
+    _complete$1: function(value) {
+      var t2, listeners, _this = this,
+        t1 = H.getTypeArgumentByIndex(_this, 0);
+      H.futureOrCheck(value, {futureOr: 1, type: t1});
+      t2 = _this.$ti;
+      if (H.checkSubtype(value, "$isFuture", t2, "$asFuture"))
+        if (H.checkSubtype(value, "$is_Future", t2, null))
+          P._Future__chainCoreFuture(value, _this);
+        else
+          P._Future__chainForeignFuture(value, _this);
+      else {
+        listeners = _this._removeListeners$0();
+        H.assertSubtypeOfRuntimeType(value, t1);
+        _this._state = 4;
+        _this._resultOrListeners = value;
+        P._Future__propagateToListeners(_this, listeners);
+      }
+    },
+    _completeWithValue$1: function(value) {
+      var listeners, _this = this;
+      H.assertSubtypeOfRuntimeType(value, H.getTypeArgumentByIndex(_this, 0));
+      listeners = _this._removeListeners$0();
+      _this._state = 4;
+      _this._resultOrListeners = value;
+      P._Future__propagateToListeners(_this, listeners);
+    },
+    _completeError$2: function(error, stackTrace) {
+      var listeners, _this = this;
+      H.interceptedTypeCheck(stackTrace, "$isStackTrace");
+      listeners = _this._removeListeners$0();
+      _this._state = 8;
+      _this._resultOrListeners = new P.AsyncError(error, stackTrace);
+      P._Future__propagateToListeners(_this, listeners);
+    },
+    _asyncComplete$1: function(value) {
+      var _this = this;
+      H.futureOrCheck(value, {futureOr: 1, type: H.getTypeArgumentByIndex(_this, 0)});
+      if (H.checkSubtype(value, "$isFuture", _this.$ti, "$asFuture")) {
+        _this._chainFuture$1(value);
+        return;
+      }
+      _this._state = 1;
+      P._rootScheduleMicrotask(null, null, _this._zone, H.functionTypeCheck(new P._Future__asyncComplete_closure(_this, value), {func: 1, ret: -1}));
+    },
+    _chainFuture$1: function(value) {
+      var _this = this,
+        t1 = _this.$ti;
+      H.assertSubtype(value, "$isFuture", t1, "$asFuture");
+      if (H.checkSubtype(value, "$is_Future", t1, null)) {
+        if (value._state === 8) {
+          _this._state = 1;
+          P._rootScheduleMicrotask(null, null, _this._zone, H.functionTypeCheck(new P._Future__chainFuture_closure(_this, value), {func: 1, ret: -1}));
+        } else
+          P._Future__chainCoreFuture(value, _this);
+        return;
+      }
+      P._Future__chainForeignFuture(value, _this);
+    },
+    _asyncCompleteError$2: function(error, stackTrace) {
+      this._state = 1;
+      P._rootScheduleMicrotask(null, null, this._zone, H.functionTypeCheck(new P._Future__asyncCompleteError_closure(this, error, stackTrace), {func: 1, ret: -1}));
+    },
+    $isFuture: 1
+  };
+  P._Future__addListener_closure.prototype = {
+    call$0: function() {
+      P._Future__propagateToListeners(this.$this, this.listener);
+    },
+    $signature: 0
+  };
+  P._Future__prependListeners_closure.prototype = {
+    call$0: function() {
+      P._Future__propagateToListeners(this.$this, this._box_0.listeners);
+    },
+    $signature: 0
+  };
+  P._Future__chainForeignFuture_closure.prototype = {
+    call$1: function(value) {
+      var t1 = this.target;
+      t1._state = 0;
+      t1._complete$1(value);
+    },
+    $signature: 4
+  };
+  P._Future__chainForeignFuture_closure0.prototype = {
+    call$2: function(error, stackTrace) {
+      H.interceptedTypeCheck(stackTrace, "$isStackTrace");
+      this.target._completeError$2(error, stackTrace);
+    },
+    call$1: function(error) {
+      return this.call$2(error, null);
+    },
+    $signature: 12
+  };
+  P._Future__chainForeignFuture_closure1.prototype = {
+    call$0: function() {
+      this.target._completeError$2(this.e, this.s);
+    },
+    $signature: 0
+  };
+  P._Future__asyncComplete_closure.prototype = {
+    call$0: function() {
+      var t1 = this.$this;
+      t1._completeWithValue$1(H.assertSubtypeOfRuntimeType(this.value, H.getTypeArgumentByIndex(t1, 0)));
+    },
+    $signature: 0
+  };
+  P._Future__chainFuture_closure.prototype = {
+    call$0: function() {
+      P._Future__chainCoreFuture(this.value, this.$this);
+    },
+    $signature: 0
+  };
+  P._Future__asyncCompleteError_closure.prototype = {
+    call$0: function() {
+      this.$this._completeError$2(this.error, this.stackTrace);
+    },
+    $signature: 0
+  };
+  P._Future__propagateToListeners_handleWhenCompleteCallback.prototype = {
+    call$0: function() {
+      var e, s, t1, exception, t2, originalSource, _this = this, completeResult = null;
+      try {
+        t1 = _this.listener;
+        completeResult = t1.result._zone.run$1$1(H.functionTypeCheck(t1.callback, {func: 1}), null);
+      } catch (exception) {
+        e = H.unwrapException(exception);
+        s = H.getTraceFromException(exception);
+        if (_this.hasError) {
+          t1 = H.interceptedTypeCheck(_this._box_1.source._resultOrListeners, "$isAsyncError").error;
+          t2 = e;
+          t2 = t1 == null ? t2 == null : t1 === t2;
+          t1 = t2;
+        } else
+          t1 = false;
+        t2 = _this._box_0;
+        if (t1)
+          t2.listenerValueOrError = H.interceptedTypeCheck(_this._box_1.source._resultOrListeners, "$isAsyncError");
+        else
+          t2.listenerValueOrError = new P.AsyncError(e, s);
+        t2.listenerHasError = true;
+        return;
+      }
+      if (!!J.getInterceptor$(completeResult).$isFuture) {
+        if (completeResult instanceof P._Future && completeResult._state >= 4) {
+          if (completeResult._state === 8) {
+            t1 = _this._box_0;
+            t1.listenerValueOrError = H.interceptedTypeCheck(completeResult._resultOrListeners, "$isAsyncError");
+            t1.listenerHasError = true;
+          }
+          return;
+        }
+        originalSource = _this._box_1.source;
+        t1 = _this._box_0;
+        t1.listenerValueOrError = completeResult.then$1$1(new P._Future__propagateToListeners_handleWhenCompleteCallback_closure(originalSource), null);
+        t1.listenerHasError = false;
+      }
+    },
+    $signature: 1
+  };
+  P._Future__propagateToListeners_handleWhenCompleteCallback_closure.prototype = {
+    call$1: function(_) {
+      return this.originalSource;
+    },
+    $signature: 13
+  };
+  P._Future__propagateToListeners_handleValueCallback.prototype = {
+    call$0: function() {
+      var e, s, t1, t2, t3, t4, exception, _this = this;
+      try {
+        t1 = _this.listener;
+        t2 = H.getTypeArgumentByIndex(t1, 0);
+        t3 = H.assertSubtypeOfRuntimeType(_this.sourceResult, t2);
+        t4 = H.getTypeArgumentByIndex(t1, 1);
+        _this._box_0.listenerValueOrError = t1.result._zone.runUnary$2$2(H.functionTypeCheck(t1.callback, {func: 1, ret: {futureOr: 1, type: t4}, args: [t2]}), t3, {futureOr: 1, type: t4}, t2);
+      } catch (exception) {
+        e = H.unwrapException(exception);
+        s = H.getTraceFromException(exception);
+        t1 = _this._box_0;
+        t1.listenerValueOrError = new P.AsyncError(e, s);
+        t1.listenerHasError = true;
+      }
+    },
+    $signature: 1
+  };
+  P._Future__propagateToListeners_handleError.prototype = {
+    call$0: function() {
+      var asyncError, e, s, t1, t2, exception, t3, t4, _this = this;
+      try {
+        asyncError = H.interceptedTypeCheck(_this._box_1.source._resultOrListeners, "$isAsyncError");
+        t1 = _this.listener;
+        if (H.boolConversionCheck(t1.matchesErrorTest$1(asyncError)) && t1.errorCallback != null) {
+          t2 = _this._box_0;
+          t2.listenerValueOrError = t1.handleError$1(asyncError);
+          t2.listenerHasError = false;
+        }
+      } catch (exception) {
+        e = H.unwrapException(exception);
+        s = H.getTraceFromException(exception);
+        t1 = H.interceptedTypeCheck(_this._box_1.source._resultOrListeners, "$isAsyncError");
+        t2 = t1.error;
+        t3 = e;
+        t4 = _this._box_0;
+        if (t2 == null ? t3 == null : t2 === t3)
+          t4.listenerValueOrError = t1;
+        else
+          t4.listenerValueOrError = new P.AsyncError(e, s);
+        t4.listenerHasError = true;
+      }
+    },
+    $signature: 1
+  };
+  P._AsyncCallbackEntry.prototype = {};
+  P.Stream.prototype = {
+    get$length: function(_) {
+      var t2, t3, _this = this, t1 = {},
+        future = new P._Future($.Zone__current, [P.int]);
+      t1.count = 0;
+      t2 = H.getTypeArgumentByIndex(_this, 0);
+      t3 = H.functionTypeCheck(new P.Stream_length_closure(t1, _this), {func: 1, ret: -1, args: [t2]});
+      H.functionTypeCheck(new P.Stream_length_closure0(t1, future), {func: 1, ret: -1});
+      W._EventStreamSubscription$(_this._html$_target, _this._eventType, t3, false, t2);
+      return future;
+    }
+  };
+  P.Stream_length_closure.prototype = {
+    call$1: function(_) {
+      H.assertSubtypeOfRuntimeType(_, H.getTypeArgumentByIndex(this.$this, 0));
+      ++this._box_0.count;
+    },
+    $signature: function() {
+      return {func: 1, ret: P.Null, args: [H.getTypeArgumentByIndex(this.$this, 0)]};
+    }
+  };
+  P.Stream_length_closure0.prototype = {
+    call$0: function() {
+      this.future._complete$1(this._box_0.count);
+    },
+    $signature: 0
+  };
+  P.StreamSubscription.prototype = {};
+  P._StreamIterator.prototype = {};
+  P.AsyncError.prototype = {
     toString$0: function(_) {
-      return this ? "true" : "false";
+      return H.S(this.error);
+    },
+    $isError: 1
+  };
+  P._Zone.prototype = {$isZone: 1};
+  P._rootHandleUncaughtError_closure.prototype = {
+    call$0: function() {
+      var error,
+        t1 = this._box_0,
+        t2 = t1.error;
+      t1 = t2 == null ? t1.error = new P.NullThrownError() : t2;
+      t2 = this.stackTrace;
+      if (t2 == null)
+        throw H.wrapException(t1);
+      error = H.wrapException(t1);
+      error.stack = t2.toString$0(0);
+      throw error;
+    },
+    $signature: 0
+  };
+  P._RootZone.prototype = {
+    runGuarded$1: function(f) {
+      var e, s, exception, _null = null;
+      H.functionTypeCheck(f, {func: 1, ret: -1});
+      try {
+        if (C.C__RootZone === $.Zone__current) {
+          f.call$0();
+          return;
+        }
+        P._rootRun(_null, _null, this, f, -1);
+      } catch (exception) {
+        e = H.unwrapException(exception);
+        s = H.getTraceFromException(exception);
+        P._rootHandleUncaughtError(_null, _null, this, e, H.interceptedTypeCheck(s, "$isStackTrace"));
+      }
+    },
+    runUnaryGuarded$1$2: function(f, arg, $T) {
+      var e, s, exception, _null = null;
+      H.functionTypeCheck(f, {func: 1, ret: -1, args: [$T]});
+      H.assertSubtypeOfRuntimeType(arg, $T);
+      try {
+        if (C.C__RootZone === $.Zone__current) {
+          f.call$1(arg);
+          return;
+        }
+        P._rootRunUnary(_null, _null, this, f, arg, -1, $T);
+      } catch (exception) {
+        e = H.unwrapException(exception);
+        s = H.getTraceFromException(exception);
+        P._rootHandleUncaughtError(_null, _null, this, e, H.interceptedTypeCheck(s, "$isStackTrace"));
+      }
+    },
+    bindCallback$1$1: function(f, $R) {
+      return new P._RootZone_bindCallback_closure(this, H.functionTypeCheck(f, {func: 1, ret: $R}), $R);
+    },
+    bindCallbackGuarded$1: function(f) {
+      return new P._RootZone_bindCallbackGuarded_closure(this, H.functionTypeCheck(f, {func: 1, ret: -1}));
+    },
+    bindUnaryCallbackGuarded$1$1: function(f, $T) {
+      return new P._RootZone_bindUnaryCallbackGuarded_closure(this, H.functionTypeCheck(f, {func: 1, ret: -1, args: [$T]}), $T);
+    },
+    run$1$1: function(f, $R) {
+      H.functionTypeCheck(f, {func: 1, ret: $R});
+      if ($.Zone__current === C.C__RootZone)
+        return f.call$0();
+      return P._rootRun(null, null, this, f, $R);
+    },
+    runUnary$2$2: function(f, arg, $R, $T) {
+      H.functionTypeCheck(f, {func: 1, ret: $R, args: [$T]});
+      H.assertSubtypeOfRuntimeType(arg, $T);
+      if ($.Zone__current === C.C__RootZone)
+        return f.call$1(arg);
+      return P._rootRunUnary(null, null, this, f, arg, $R, $T);
+    },
+    runBinary$3$3: function(f, arg1, arg2, $R, T1, T2) {
+      H.functionTypeCheck(f, {func: 1, ret: $R, args: [T1, T2]});
+      H.assertSubtypeOfRuntimeType(arg1, T1);
+      H.assertSubtypeOfRuntimeType(arg2, T2);
+      if ($.Zone__current === C.C__RootZone)
+        return f.call$2(arg1, arg2);
+      return P._rootRunBinary(null, null, this, f, arg1, arg2, $R, T1, T2);
+    },
+    registerBinaryCallback$3$1: function(f, $R, T1, T2) {
+      return H.functionTypeCheck(f, {func: 1, ret: $R, args: [T1, T2]});
     }
   };
+  P._RootZone_bindCallback_closure.prototype = {
+    call$0: function() {
+      return this.$this.run$1$1(this.f, this.R);
+    },
+    $signature: function() {
+      return {func: 1, ret: this.R};
+    }
+  };
+  P._RootZone_bindCallbackGuarded_closure.prototype = {
+    call$0: function() {
+      return this.$this.runGuarded$1(this.f);
+    },
+    $signature: 1
+  };
+  P._RootZone_bindUnaryCallbackGuarded_closure.prototype = {
+    call$1: function(arg) {
+      var t1 = this.T;
+      return this.$this.runUnaryGuarded$1$2(this.f, H.assertSubtypeOfRuntimeType(arg, t1), t1);
+    },
+    $signature: function() {
+      return {func: 1, ret: -1, args: [this.T]};
+    }
+  };
+  P._HashMap.prototype = {
+    get$length: function(_) {
+      return this._collection$_length;
+    },
+    get$keys: function() {
+      return new P._HashMapKeyIterable(this, [H.getTypeArgumentByIndex(this, 0)]);
+    },
+    containsKey$1: function(key) {
+      var nums;
+      if (typeof key === "number" && (key & 1073741823) === key) {
+        nums = this._nums;
+        return nums == null ? false : nums[key] != null;
+      } else
+        return this._containsKey$1(key);
+    },
+    _containsKey$1: function(key) {
+      var rest = this._rest;
+      if (rest == null)
+        return false;
+      return this._findBucketIndex$2(this._getBucket$2(rest, key), key) >= 0;
+    },
+    $index: function(_, key) {
+      var strings, t1, nums;
+      if (typeof key === "string" && key !== "__proto__") {
+        strings = this._strings;
+        t1 = strings == null ? null : P._HashMap__getTableEntry(strings, key);
+        return t1;
+      } else if (typeof key === "number" && (key & 1073741823) === key) {
+        nums = this._nums;
+        t1 = nums == null ? null : P._HashMap__getTableEntry(nums, key);
+        return t1;
+      } else
+        return this._get$1(key);
+    },
+    _get$1: function(key) {
+      var bucket, index,
+        rest = this._rest;
+      if (rest == null)
+        return;
+      bucket = this._getBucket$2(rest, key);
+      index = this._findBucketIndex$2(bucket, key);
+      return index < 0 ? null : bucket[index + 1];
+    },
+    $indexSet: function(_, key, value) {
+      var nums, _this = this;
+      H.assertSubtypeOfRuntimeType(key, H.getTypeArgumentByIndex(_this, 0));
+      H.assertSubtypeOfRuntimeType(value, H.getTypeArgumentByIndex(_this, 1));
+      if (typeof key === "number" && (key & 1073741823) === key) {
+        nums = _this._nums;
+        _this._addHashTableEntry$3(nums == null ? _this._nums = P._HashMap__newHashTable() : nums, key, value);
+      } else
+        _this._set$2(key, value);
+    },
+    _set$2: function(key, value) {
+      var rest, hash, bucket, index, _this = this;
+      H.assertSubtypeOfRuntimeType(key, H.getTypeArgumentByIndex(_this, 0));
+      H.assertSubtypeOfRuntimeType(value, H.getTypeArgumentByIndex(_this, 1));
+      rest = _this._rest;
+      if (rest == null)
+        rest = _this._rest = P._HashMap__newHashTable();
+      hash = _this._computeHashCode$1(key);
+      bucket = rest[hash];
+      if (bucket == null) {
+        P._HashMap__setTableEntry(rest, hash, [key, value]);
+        ++_this._collection$_length;
+        _this._keys = null;
+      } else {
+        index = _this._findBucketIndex$2(bucket, key);
+        if (index >= 0)
+          bucket[index + 1] = value;
+        else {
+          bucket.push(key, value);
+          ++_this._collection$_length;
+          _this._keys = null;
+        }
+      }
+    },
+    putIfAbsent$2: function(key, ifAbsent) {
+      var value, _this = this;
+      H.assertSubtypeOfRuntimeType(key, H.getTypeArgumentByIndex(_this, 0));
+      H.functionTypeCheck(ifAbsent, {func: 1, ret: H.getTypeArgumentByIndex(_this, 1)});
+      if (_this.containsKey$1(key))
+        return _this.$index(0, key);
+      value = ifAbsent.call$0();
+      _this.$indexSet(0, key, value);
+      return value;
+    },
+    remove$1: function(_, key) {
+      if (typeof key === "number" && (key & 1073741823) === key)
+        return this._removeHashTableEntry$2(this._nums, key);
+      else
+        return this._remove$1(key);
+    },
+    _remove$1: function(key) {
+      var bucket, index, _this = this,
+        rest = _this._rest;
+      if (rest == null)
+        return;
+      bucket = _this._getBucket$2(rest, key);
+      index = _this._findBucketIndex$2(bucket, key);
+      if (index < 0)
+        return;
+      --_this._collection$_length;
+      _this._keys = null;
+      return bucket.splice(index, 2)[1];
+    },
+    forEach$1: function(_, action) {
+      var keys, $length, i, key, _this = this,
+        t1 = H.getTypeArgumentByIndex(_this, 0);
+      H.functionTypeCheck(action, {func: 1, ret: -1, args: [t1, H.getTypeArgumentByIndex(_this, 1)]});
+      keys = _this._computeKeys$0();
+      for ($length = keys.length, i = 0; i < $length; ++i) {
+        key = keys[i];
+        action.call$2(H.assertSubtypeOfRuntimeType(key, t1), _this.$index(0, key));
+        if (keys !== _this._keys)
+          throw H.wrapException(P.ConcurrentModificationError$(_this));
+      }
+    },
+    _computeKeys$0: function() {
+      var result, strings, names, entries, index, i, nums, rest, bucket, $length, i0, _this = this,
+        t1 = _this._keys;
+      if (t1 != null)
+        return t1;
+      result = new Array(_this._collection$_length);
+      result.fixed$length = Array;
+      strings = _this._strings;
+      if (strings != null) {
+        names = Object.getOwnPropertyNames(strings);
+        entries = names.length;
+        for (index = 0, i = 0; i < entries; ++i) {
+          result[index] = names[i];
+          ++index;
+        }
+      } else
+        index = 0;
+      nums = _this._nums;
+      if (nums != null) {
+        names = Object.getOwnPropertyNames(nums);
+        entries = names.length;
+        for (i = 0; i < entries; ++i) {
+          result[index] = +names[i];
+          ++index;
+        }
+      }
+      rest = _this._rest;
+      if (rest != null) {
+        names = Object.getOwnPropertyNames(rest);
+        entries = names.length;
+        for (i = 0; i < entries; ++i) {
+          bucket = rest[names[i]];
+          $length = bucket.length;
+          for (i0 = 0; i0 < $length; i0 += 2) {
+            result[index] = bucket[i0];
+            ++index;
+          }
+        }
+      }
+      return _this._keys = result;
+    },
+    _addHashTableEntry$3: function(table, key, value) {
+      var _this = this;
+      H.assertSubtypeOfRuntimeType(key, H.getTypeArgumentByIndex(_this, 0));
+      H.assertSubtypeOfRuntimeType(value, H.getTypeArgumentByIndex(_this, 1));
+      if (table[key] == null) {
+        ++_this._collection$_length;
+        _this._keys = null;
+      }
+      P._HashMap__setTableEntry(table, key, value);
+    },
+    _removeHashTableEntry$2: function(table, key) {
+      var value;
+      if (table != null && table[key] != null) {
+        value = H.assertSubtypeOfRuntimeType(P._HashMap__getTableEntry(table, key), H.getTypeArgumentByIndex(this, 1));
+        delete table[key];
+        --this._collection$_length;
+        this._keys = null;
+        return value;
+      } else
+        return;
+    },
+    _computeHashCode$1: function(key) {
+      return J.get$hashCode$(key) & 1073741823;
+    },
+    _getBucket$2: function(table, key) {
+      return table[this._computeHashCode$1(key)];
+    },
+    _findBucketIndex$2: function(bucket, key) {
+      var $length, i;
+      if (bucket == null)
+        return -1;
+      $length = bucket.length;
+      for (i = 0; i < $length; i += 2)
+        if (J.$eq$(bucket[i], key))
+          return i;
+      return -1;
+    },
+    $isHashMap: 1
+  };
+  P._HashMapKeyIterable.prototype = {
+    get$length: function(_) {
+      return this._map._collection$_length;
+    },
+    get$iterator: function(_) {
+      var t1 = this._map;
+      return new P._HashMapKeyIterator(t1, t1._computeKeys$0(), this.$ti);
+    }
+  };
+  P._HashMapKeyIterator.prototype = {
+    get$current: function() {
+      return this._collection$_current;
+    },
+    moveNext$0: function() {
+      var _this = this,
+        keys = _this._keys,
+        offset = _this._offset,
+        t1 = _this._map;
+      if (keys !== t1._keys)
+        throw H.wrapException(P.ConcurrentModificationError$(t1));
+      else if (offset >= keys.length) {
+        _this.set$_collection$_current(null);
+        return false;
+      } else {
+        _this.set$_collection$_current(keys[offset]);
+        _this._offset = offset + 1;
+        return true;
+      }
+    },
+    set$_collection$_current: function(_current) {
+      this._collection$_current = H.assertSubtypeOfRuntimeType(_current, H.getTypeArgumentByIndex(this, 0));
+    }
+  };
+  P.MapBase.prototype = {};
+  P.MapBase_mapToString_closure.prototype = {
+    call$2: function(k, v) {
+      var t2,
+        t1 = this._box_0;
+      if (!t1.first)
+        this.result._contents += ", ";
+      t1.first = false;
+      t1 = this.result;
+      t2 = t1._contents += H.S(k);
+      t1._contents = t2 + ": ";
+      t1._contents += H.S(v);
+    },
+    $signature: 14
+  };
+  P.MapMixin.prototype = {
+    forEach$1: function(_, action) {
+      var t1, key, _this = this;
+      H.functionTypeCheck(action, {func: 1, ret: -1, args: [H.getTypeArgumentByIndex(_this, 0), H.getTypeArgumentByIndex(_this, 1)]});
+      for (t1 = _this.get$keys(), t1 = t1.get$iterator(t1); t1.moveNext$0();) {
+        key = t1.get$current();
+        action.call$2(key, _this.$index(0, key));
+      }
+    },
+    get$length: function(_) {
+      var t1 = this.get$keys();
+      return t1.get$length(t1);
+    },
+    toString$0: function(_) {
+      return P.MapBase_mapToString(this);
+    },
+    $isMap: 1
+  };
+  P.bool.prototype = {};
   P.double.prototype = {};
   P.Error.prototype = {};
+  P.AssertionError.prototype = {
+    toString$0: function(_) {
+      return "Assertion failed";
+    }
+  };
   P.NullThrownError.prototype = {
     toString$0: function(_) {
       return "Throw of null.";
@@ -1661,7 +3733,7 @@
   };
   P.ArgumentError.prototype = {
     get$_errorName: function() {
-      return "Invalid argument";
+      return "Invalid argument" + (!this._hasValue ? "(s)" : "");
     },
     get$_errorExplanation: function() {
       return "";
@@ -1673,6 +3745,8 @@
       t1 = _this.message;
       message = t1 == null ? "" : ": " + t1;
       prefix = _this.get$_errorName() + nameString + message;
+      if (!_this._hasValue)
+        return prefix;
       explanation = _this.get$_errorExplanation();
       errorValue = P.Error_safeToString(_this.invalidValue);
       return prefix + explanation + ": " + errorValue;
@@ -1683,7 +3757,21 @@
       return "RangeError";
     },
     get$_errorExplanation: function() {
-      return "";
+      var explanation, t2,
+        t1 = this.start;
+      if (t1 == null) {
+        t1 = this.end;
+        explanation = t1 != null ? ": Not less than or equal to " + H.S(t1) : "";
+      } else {
+        t2 = this.end;
+        if (t2 == null)
+          explanation = ": Not greater than or equal to " + H.S(t1);
+        else if (t2 > t1)
+          explanation = ": Not in range " + H.S(t1) + ".." + H.S(t2) + ", inclusive";
+        else
+          explanation = t2 < t1 ? ": Valid value range is empty" : ": Only valid value is " + H.S(t1);
+      }
+      return explanation;
     }
   };
   P.IndexError.prototype = {
@@ -1717,6 +3805,11 @@
       return t1 != null ? "UnimplementedError: " + t1 : "UnimplementedError";
     }
   };
+  P.StateError.prototype = {
+    toString$0: function(_) {
+      return "Bad state: " + this.message;
+    }
+  };
   P.ConcurrentModificationError.prototype = {
     toString$0: function(_) {
       var t1 = this.modifiedObject;
@@ -1725,21 +3818,53 @@
       return "Concurrent modification during iteration: " + P.Error_safeToString(t1) + ".";
     }
   };
+  P.StackOverflowError.prototype = {
+    toString$0: function(_) {
+      return "Stack Overflow";
+    },
+    $isError: 1
+  };
   P.CyclicInitializationError.prototype = {
     toString$0: function(_) {
       var t1 = this.variableName;
       return t1 == null ? "Reading static variable during its initialization" : "Reading static variable '" + t1 + "' during its initialization";
     }
   };
+  P._Exception.prototype = {
+    toString$0: function(_) {
+      return "Exception: " + this.message;
+    }
+  };
   P.int.prototype = {};
+  P.Iterable.prototype = {
+    get$length: function(_) {
+      var count,
+        it = this.get$iterator(this);
+      for (count = 0; it.moveNext$0();)
+        ++count;
+      return count;
+    },
+    toString$0: function(_) {
+      return P.IterableBase_iterableToShortString(this, "(", ")");
+    }
+  };
   P.List.prototype = {$isIterable: 1};
   P.Null.prototype = {
+    get$hashCode: function(_) {
+      return P.Object.prototype.get$hashCode.call(this, this);
+    },
     toString$0: function(_) {
       return "null";
     }
   };
   P.num.prototype = {};
   P.Object.prototype = {constructor: P.Object, $isObject: 1,
+    $eq: function(_, other) {
+      return this === other;
+    },
+    get$hashCode: function(_) {
+      return H.Primitives_objectHashCode(this);
+    },
     toString$0: function(_) {
       return "Instance of '" + H.S(H.Primitives_objectTypeName(this)) + "'";
     },
@@ -1747,6 +3872,7 @@
       return this.toString$0(this);
     }
   };
+  P.StackTrace.prototype = {};
   P.String.prototype = {};
   P.StringBuffer.prototype = {
     get$length: function(_) {
@@ -1788,12 +3914,19 @@
       return receiver.focus();
     }
   };
-  W.EventTarget.prototype = {};
+  W.Event.prototype = {$isEvent: 1};
+  W.EventTarget.prototype = {
+    _addEventListener$3: function(receiver, type, listener, options) {
+      return receiver.addEventListener(type, H.convertDartClosureToJS(H.functionTypeCheck(listener, {func: 1, args: [W.Event]}), 1), false);
+    },
+    $isEventTarget: 1
+  };
   W.FormElement.prototype = {
     get$length: function(receiver) {
       return receiver.length;
     }
   };
+  W.KeyboardEvent.prototype = {$isKeyboardEvent: 1};
   W.Node.prototype = {
     toString$0: function(receiver) {
       var value = receiver.nodeValue;
@@ -1805,9 +3938,191 @@
       return receiver.length;
     }
   };
+  W.UIEvent.prototype = {};
+  W.Window.prototype = {
+    get$animationFrame: function(receiver) {
+      var t1 = P.num,
+        t2 = new P._Future($.Zone__current, [t1]),
+        t3 = H.functionTypeCheck(new W.Window_animationFrame_closure(new P._SyncCompleter(t2, [t1])), {func: 1, ret: -1, args: [P.num]});
+      this._ensureRequestAnimationFrame$0(receiver);
+      this._requestAnimationFrame$1(receiver, W._wrapZone(t3, t1));
+      return t2;
+    },
+    _requestAnimationFrame$1: function(receiver, callback) {
+      return receiver.requestAnimationFrame(H.convertDartClosureToJS(H.functionTypeCheck(callback, {func: 1, ret: -1, args: [P.num]}), 1));
+    },
+    _ensureRequestAnimationFrame$0: function(receiver) {
+      if (!!(receiver.requestAnimationFrame && receiver.cancelAnimationFrame))
+        return;
+      (function($this) {
+        var vendors = ['ms', 'moz', 'webkit', 'o'];
+        for (var i = 0; i < vendors.length && !$this.requestAnimationFrame; ++i) {
+          $this.requestAnimationFrame = $this[vendors[i] + 'RequestAnimationFrame'];
+          $this.cancelAnimationFrame = $this[vendors[i] + 'CancelAnimationFrame'] || $this[vendors[i] + 'CancelRequestAnimationFrame'];
+        }
+        if ($this.requestAnimationFrame && $this.cancelAnimationFrame)
+          return;
+        $this.requestAnimationFrame = function(callback) {
+          return window.setTimeout(function() {
+            callback(Date.now());
+          }, 16);
+        };
+        $this.cancelAnimationFrame = function(id) {
+          clearTimeout(id);
+        };
+      })(receiver);
+    }
+  };
+  W.Window_animationFrame_closure.prototype = {
+    call$1: function(time) {
+      this.completer.complete$1(0, H.numTypeCheck(time));
+    },
+    $signature: 15
+  };
+  W._EventStream.prototype = {};
+  W._EventStreamSubscription.prototype = {};
+  W._EventStreamSubscription_closure.prototype = {
+    call$1: function(e) {
+      return this.onData.call$1(H.interceptedTypeCheck(e, "$isEvent"));
+    },
+    $signature: 16
+  };
   P.SvgElement.prototype = {
     focus$0: function(receiver) {
       return receiver.focus();
+    }
+  };
+  E.Keyboard.prototype = {
+    Keyboard$0: function() {
+      var t1 = W.KeyboardEvent,
+        t2 = {func: 1, ret: -1, args: [t1]};
+      W._EventStreamSubscription$(window, "keydown", H.functionTypeCheck(new E.Keyboard_closure(this), t2), false, t1);
+      W._EventStreamSubscription$(window, "keyup", H.functionTypeCheck(new E.Keyboard_closure0(this), t2), false, t1);
+    }
+  };
+  E.Keyboard_closure.prototype = {
+    call$1: function($event) {
+      H.interceptedTypeCheck($event, "$isKeyboardEvent");
+      this.$this.keys.putIfAbsent$2($event.keyCode, new E.Keyboard__closure($event));
+    },
+    $signature: 5
+  };
+  E.Keyboard__closure.prototype = {
+    call$0: function() {
+      return this.event.timeStamp;
+    },
+    $signature: 17
+  };
+  E.Keyboard_closure0.prototype = {
+    call$1: function($event) {
+      this.$this.keys.remove$1(0, H.interceptedTypeCheck($event, "$isKeyboardEvent").keyCode);
+    },
+    $signature: 5
+  };
+  E.Point.prototype = {
+    $add: function(_, p) {
+      var t1 = this.x,
+        t2 = p.x,
+        t3 = this.y,
+        t4 = p.y,
+        t5 = new E.Point();
+      t5.x = t1 + t2;
+      t5.y = t3 + t4;
+      return t5;
+    },
+    toString$0: function(_) {
+      return "(" + this.x + ", " + H.S(this.y) + ")";
+    }
+  };
+  E.Ball.prototype = {};
+  E.Player.prototype = {
+    draw$0: function() {
+      var t2,
+        t1 = $.ctx;
+      t1.fillStyle = "#00CC00";
+      t2 = this._position;
+      t1.fillRect(t2.x, t2.y, 15, 70);
+    },
+    move$0: function() {
+      var t3, _this = this,
+        t1 = $.keyboard,
+        t2 = _this._keyUp;
+      if (t1.keys.containsKey$1(t2))
+        t1 = _this._dir = $.$get$Player_UP();
+      else {
+        t1 = $.keyboard;
+        t2 = _this._keyDown;
+        if (t1.keys.containsKey$1(t2)) {
+          t1 = $.$get$Player_DOWN();
+          _this._dir = t1;
+        } else {
+          t1 = $.$get$Player_STAND_STILL();
+          _this._dir = t1;
+        }
+      }
+      if (!(t1 == $.$get$Player_UP() && _this._position.y >= 0))
+        if (t1 == $.$get$Player_DOWN()) {
+          t2 = _this._position.y;
+          t3 = $.$get$Player_MAX_Y();
+          if (typeof t3 !== "number")
+            return H.iae(t3);
+          t3 = t2 <= t3;
+          t2 = t3;
+        } else
+          t2 = false;
+      else
+        t2 = true;
+      if (t2)
+        _this._position = _this._position.$add(0, t1);
+    }
+  };
+  E.Game.prototype = {
+    run$0: function() {
+      var $async$goto = 0,
+        $async$completer = P._makeAsyncAwaitCompleter(null),
+        $async$returnValue, $async$self = this, t1, t2, $async$temp1;
+      var $async$run$0 = P._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return P._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              $async$temp1 = H;
+              $async$goto = 3;
+              return P._asyncAwait(C.Window_methods.get$animationFrame(window), $async$run$0);
+            case 3:
+              // returning from await.
+              t1 = $async$temp1.numTypeCheck($async$result);
+              t2 = $async$self._lastTimeStamp;
+              if (typeof t1 !== "number") {
+                $async$returnValue = t1.$sub();
+                // goto return
+                $async$goto = 1;
+                break;
+              }
+              if (t1 - t2 > 50) {
+                $async$self._lastTimeStamp = t1;
+                E.clear();
+                $async$self.player1.move$0();
+                $async$self.player1.draw$0();
+                $async$self.player2.move$0();
+                $async$self.player2.draw$0();
+                t1 = $async$self.ball;
+                t1._position = t1._position.$add(0, t1.dir);
+                t1 = $async$self.ball;
+                t2 = $.ctx;
+                t2.fillStyle = "#00CC00";
+                t1 = t1._position;
+                t2.fillRect(t1.x, t1.y, 10, 10);
+              }
+              $async$self.run$0();
+            case 1:
+              // return
+              return P._asyncReturn($async$returnValue, $async$completer);
+          }
+      });
+      return P._asyncStartSync($async$run$0, $async$completer);
     }
   };
   (function aliases() {
@@ -1816,26 +4131,45 @@
     _ = J.JavaScriptObject.prototype;
     _.super$JavaScriptObject$toString = _.toString$0;
   })();
+  (function installTearOffs() {
+    var _static_1 = hunkHelpers._static_1,
+      _static_0 = hunkHelpers._static_0;
+    _static_1(P, "async__AsyncRun__scheduleImmediateJsOverride$closure", "_AsyncRun__scheduleImmediateJsOverride", 2);
+    _static_1(P, "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", "_AsyncRun__scheduleImmediateWithSetImmediate", 2);
+    _static_1(P, "async__AsyncRun__scheduleImmediateWithTimer$closure", "_AsyncRun__scheduleImmediateWithTimer", 2);
+    _static_0(P, "async___startMicrotaskLoop$closure", "_startMicrotaskLoop", 1);
+  })();
   (function inheritance() {
     var _inherit = hunkHelpers.inherit,
       _inheritMany = hunkHelpers.inheritMany;
     _inherit(P.Object, null);
-    _inheritMany(P.Object, [H.JS_CONST, J.Interceptor, J.ArrayIterator, H.Closure, P.Error, P.bool, P.num, P.List, P.Null, P.String, P.StringBuffer]);
-    _inheritMany(J.Interceptor, [J.JSBool, J.JSNull, J.JavaScriptObject, J.JSArray, J.JSNumber, J.JSString, W.EventTarget, W.CanvasRenderingContext2D, W.DomException]);
+    _inheritMany(P.Object, [H.JS_CONST, J.Interceptor, J.ArrayIterator, P.Iterable, H.TypeErrorDecoder, P.Error, H.ExceptionAndStackTrace, H.Closure, H._StackTrace, P._TimerImpl, P._AsyncAwaitCompleter, P._Completer, P._FutureListener, P._Future, P._AsyncCallbackEntry, P.Stream, P.StreamSubscription, P._StreamIterator, P.AsyncError, P._Zone, P.MapMixin, P._HashMapKeyIterator, P.bool, P.num, P.StackOverflowError, P._Exception, P.List, P.Null, P.StackTrace, P.String, P.StringBuffer, E.Keyboard, E.Point, E.Ball, E.Player, E.Game]);
+    _inheritMany(J.Interceptor, [J.JSBool, J.JSNull, J.JavaScriptObject, J.JSArray, J.JSNumber, J.JSString, W.EventTarget, W.CanvasRenderingContext2D, W.DomException, W.Event]);
     _inheritMany(J.JavaScriptObject, [J.PlainJavaScriptObject, J.UnknownJavaScriptObject, J.JavaScriptFunction]);
     _inherit(J.JSUnmodifiableArray, J.JSArray);
     _inheritMany(J.JSNumber, [J.JSInt, J.JSDouble]);
-    _inheritMany(H.Closure, [H.TearOffClosure, H.initHooks_closure, H.initHooks_closure0, H.initHooks_closure1]);
+    _inherit(H.EfficientLengthIterable, P.Iterable);
+    _inheritMany(P.Error, [H.NullError, H.JsNoSuchMethodError, H.UnknownJsTypeError, H.TypeErrorImplementation, H.RuntimeError, P.AssertionError, P.NullThrownError, P.ArgumentError, P.UnsupportedError, P.UnimplementedError, P.StateError, P.ConcurrentModificationError, P.CyclicInitializationError]);
+    _inheritMany(H.Closure, [H.unwrapException_saveStackTrace, H.TearOffClosure, H.initHooks_closure, H.initHooks_closure0, H.initHooks_closure1, P._AsyncRun__initializeScheduleImmediate_internalCallback, P._AsyncRun__initializeScheduleImmediate_closure, P._AsyncRun__scheduleImmediateJsOverride_internalCallback, P._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback, P._TimerImpl_internalCallback, P._awaitOnObject_closure, P._awaitOnObject_closure0, P._wrapJsFunctionForAsync_closure, P._Future__addListener_closure, P._Future__prependListeners_closure, P._Future__chainForeignFuture_closure, P._Future__chainForeignFuture_closure0, P._Future__chainForeignFuture_closure1, P._Future__asyncComplete_closure, P._Future__chainFuture_closure, P._Future__asyncCompleteError_closure, P._Future__propagateToListeners_handleWhenCompleteCallback, P._Future__propagateToListeners_handleWhenCompleteCallback_closure, P._Future__propagateToListeners_handleValueCallback, P._Future__propagateToListeners_handleError, P.Stream_length_closure, P.Stream_length_closure0, P._rootHandleUncaughtError_closure, P._RootZone_bindCallback_closure, P._RootZone_bindCallbackGuarded_closure, P._RootZone_bindUnaryCallbackGuarded_closure, P.MapBase_mapToString_closure, W.Window_animationFrame_closure, W._EventStreamSubscription_closure, E.Keyboard_closure, E.Keyboard__closure, E.Keyboard_closure0]);
     _inheritMany(H.TearOffClosure, [H.StaticClosure, H.BoundClosure]);
-    _inheritMany(P.Error, [H.TypeErrorImplementation, H.RuntimeError, P.NullThrownError, P.ArgumentError, P.UnsupportedError, P.UnimplementedError, P.ConcurrentModificationError, P.CyclicInitializationError]);
+    _inherit(H._AssertionError, P.AssertionError);
+    _inherit(P._SyncCompleter, P._Completer);
+    _inherit(P._RootZone, P._Zone);
+    _inherit(P.MapBase, P.MapMixin);
+    _inherit(P._HashMap, P.MapBase);
+    _inherit(P._HashMapKeyIterable, H.EfficientLengthIterable);
     _inheritMany(P.num, [P.double, P.int]);
     _inheritMany(P.ArgumentError, [P.RangeError, P.IndexError]);
-    _inherit(W.Node, W.EventTarget);
+    _inheritMany(W.EventTarget, [W.Node, W.Window]);
     _inherit(W.Element, W.Node);
     _inheritMany(W.Element, [W.HtmlElement, P.SvgElement]);
     _inheritMany(W.HtmlElement, [W.AnchorElement, W.AreaElement, W.CanvasElement, W.FormElement, W.SelectElement]);
+    _inherit(W.UIEvent, W.Event);
+    _inherit(W.KeyboardEvent, W.UIEvent);
+    _inherit(W._EventStream, P.Stream);
+    _inherit(W._EventStreamSubscription, P.StreamSubscription);
   })();
-  var init = {mangledGlobalNames: {int: "int", double: "double", num: "num", String: "String", bool: "bool", Null: "Null", List: "List"}, mangledNames: {}, getTypeFromName: getGlobalFromName, metadata: [], types: [{func: 1, args: [,]}], interceptorsByTag: null, leafTags: null};
+  var init = {mangledGlobalNames: {int: "int", double: "double", num: "num", String: "String", bool: "bool", Null: "Null", List: "List"}, mangledNames: {}, getTypeFromName: getGlobalFromName, metadata: [], types: [{func: 1, ret: P.Null}, {func: 1, ret: -1}, {func: 1, ret: -1, args: [{func: 1, ret: -1}]}, {func: 1, args: [,]}, {func: 1, ret: P.Null, args: [,]}, {func: 1, ret: P.Null, args: [W.KeyboardEvent]}, {func: 1, args: [, P.String]}, {func: 1, args: [P.String]}, {func: 1, ret: P.Null, args: [{func: 1, ret: -1}]}, {func: 1, ret: -1, args: [,]}, {func: 1, ret: P.Null, args: [, P.StackTrace]}, {func: 1, ret: P.Null, args: [P.int,,]}, {func: 1, ret: P.Null, args: [,], opt: [P.StackTrace]}, {func: 1, ret: [P._Future,,], args: [,]}, {func: 1, ret: P.Null, args: [,,]}, {func: 1, ret: P.Null, args: [P.num]}, {func: 1, args: [W.Event]}, {func: 1, ret: P.num}], interceptorsByTag: null, leafTags: null};
   (function constants() {
     C.CanvasElement_methods = W.CanvasElement.prototype;
     C.Interceptor_methods = J.Interceptor.prototype;
@@ -1845,6 +4179,7 @@
     C.JavaScriptFunction_methods = J.JavaScriptFunction.prototype;
     C.PlainJavaScriptObject_methods = J.PlainJavaScriptObject.prototype;
     C.UnknownJavaScriptObject_methods = J.UnknownJavaScriptObject.prototype;
+    C.Window_methods = W.Window.prototype;
     C.C_JS_CONST = function getTagFallback(o) {
   var s = Object.prototype.toString.call(o);
   return s.substring(8, s.length - 1);
@@ -1965,18 +4300,28 @@
 };
     C.C_JS_CONST3 = function(hooks) { return hooks; }
 ;
+    C.C__RootZone = new P._RootZone();
   })();
   (function staticFields() {
     $.Closure_functionCounter = 0;
     $.BoundClosure_selfFieldNameCache = null;
     $.BoundClosure_receiverFieldNameCache = null;
+    $._inTypeAssertion = false;
     $.getTagFunction = null;
     $.alternateTagFunction = null;
     $.prototypeForTagFunction = null;
     $.dispatchRecordsForInstanceTags = null;
     $.interceptorsForUncacheableTags = null;
     $.initNativeDispatchFlag = null;
+    $._nextCallback = null;
+    $._lastCallback = null;
+    $._lastPriorityCallback = null;
+    $._isInCallbackLoop = false;
+    $.Zone__current = C.C__RootZone;
     $._toStringVisiting = [];
+    $.canvas = null;
+    $.ctx = null;
+    $.keyboard = null;
   })();
   (function lazyInitializers() {
     var _lazy = hunkHelpers.lazy;
@@ -1986,13 +4331,106 @@
     _lazy($, "JS_INTEROP_INTERCEPTOR_TAG", "$get$JS_INTEROP_INTERCEPTOR_TAG", function() {
       return H.getIsolateAffinityTag("_$dart_js");
     });
-    _lazy($, "canvas", "$get$canvas", function() {
-      var t1 = W.querySelector("#canvas");
-      J.focus$0$x(t1);
-      return H.interceptedTypeCheck(t1, "$isCanvasElement");
+    _lazy($, "TypeErrorDecoder_noSuchMethodPattern", "$get$TypeErrorDecoder_noSuchMethodPattern", function() {
+      return H.TypeErrorDecoder_extractPattern(H.TypeErrorDecoder_provokeCallErrorOn({
+        toString: function() {
+          return "$receiver$";
+        }
+      }));
     });
-    _lazy($, "ctx", "$get$ctx", function() {
-      return H.interceptedTypeCheck(C.CanvasElement_methods.getContext$1($.$get$canvas(), "2d"), "$isCanvasRenderingContext2D");
+    _lazy($, "TypeErrorDecoder_notClosurePattern", "$get$TypeErrorDecoder_notClosurePattern", function() {
+      return H.TypeErrorDecoder_extractPattern(H.TypeErrorDecoder_provokeCallErrorOn({$method$: null,
+        toString: function() {
+          return "$receiver$";
+        }
+      }));
+    });
+    _lazy($, "TypeErrorDecoder_nullCallPattern", "$get$TypeErrorDecoder_nullCallPattern", function() {
+      return H.TypeErrorDecoder_extractPattern(H.TypeErrorDecoder_provokeCallErrorOn(null));
+    });
+    _lazy($, "TypeErrorDecoder_nullLiteralCallPattern", "$get$TypeErrorDecoder_nullLiteralCallPattern", function() {
+      return H.TypeErrorDecoder_extractPattern(function() {
+        var $argumentsExpr$ = '$arguments$';
+        try {
+          null.$method$($argumentsExpr$);
+        } catch (e) {
+          return e.message;
+        }
+      }());
+    });
+    _lazy($, "TypeErrorDecoder_undefinedCallPattern", "$get$TypeErrorDecoder_undefinedCallPattern", function() {
+      return H.TypeErrorDecoder_extractPattern(H.TypeErrorDecoder_provokeCallErrorOn(void 0));
+    });
+    _lazy($, "TypeErrorDecoder_undefinedLiteralCallPattern", "$get$TypeErrorDecoder_undefinedLiteralCallPattern", function() {
+      return H.TypeErrorDecoder_extractPattern(function() {
+        var $argumentsExpr$ = '$arguments$';
+        try {
+          (void 0).$method$($argumentsExpr$);
+        } catch (e) {
+          return e.message;
+        }
+      }());
+    });
+    _lazy($, "TypeErrorDecoder_nullPropertyPattern", "$get$TypeErrorDecoder_nullPropertyPattern", function() {
+      return H.TypeErrorDecoder_extractPattern(H.TypeErrorDecoder_provokePropertyErrorOn(null));
+    });
+    _lazy($, "TypeErrorDecoder_nullLiteralPropertyPattern", "$get$TypeErrorDecoder_nullLiteralPropertyPattern", function() {
+      return H.TypeErrorDecoder_extractPattern(function() {
+        try {
+          null.$method$;
+        } catch (e) {
+          return e.message;
+        }
+      }());
+    });
+    _lazy($, "TypeErrorDecoder_undefinedPropertyPattern", "$get$TypeErrorDecoder_undefinedPropertyPattern", function() {
+      return H.TypeErrorDecoder_extractPattern(H.TypeErrorDecoder_provokePropertyErrorOn(void 0));
+    });
+    _lazy($, "TypeErrorDecoder_undefinedLiteralPropertyPattern", "$get$TypeErrorDecoder_undefinedLiteralPropertyPattern", function() {
+      return H.TypeErrorDecoder_extractPattern(function() {
+        try {
+          (void 0).$method$;
+        } catch (e) {
+          return e.message;
+        }
+      }());
+    });
+    _lazy($, "_AsyncRun__scheduleImmediateClosure", "$get$_AsyncRun__scheduleImmediateClosure", function() {
+      return P._AsyncRun__initializeScheduleImmediate();
+    });
+    _lazy($, "Ball_DOWN_RIGHT", "$get$Ball_DOWN_RIGHT", function() {
+      return E.Point$(10, 10);
+    });
+    _lazy($, "Player_MAX_Y", "$get$Player_MAX_Y", function() {
+      var t1 = $.canvas.height;
+      if (typeof t1 !== "number")
+        return t1.$sub();
+      return t1 - 70;
+    });
+    _lazy($, "Player_UP", "$get$Player_UP", function() {
+      return E.Point$(0, -15);
+    });
+    _lazy($, "Player_DOWN", "$get$Player_DOWN", function() {
+      return E.Point$(0, 15);
+    });
+    _lazy($, "Player_STAND_STILL", "$get$Player_STAND_STILL", function() {
+      return E.Point$(0, 0);
+    });
+    _lazy($, "Player_player1InitialPosition", "$get$Player_player1InitialPosition", function() {
+      var t1 = $.canvas.height;
+      if (typeof t1 !== "number")
+        return t1.$sub();
+      return E.Point$(0, (t1 - 70) / 2);
+    });
+    _lazy($, "Player_player2InitialPosition", "$get$Player_player2InitialPosition", function() {
+      var t1 = $.canvas,
+        t2 = t1.width;
+      if (typeof t2 !== "number")
+        return t2.$sub();
+      t1 = t1.height;
+      if (typeof t1 !== "number")
+        return t1.$sub();
+      return E.Point$(t2 - 15, (t1 - 70) / 2);
     });
   })();
   (function nativeSupport() {
@@ -2018,8 +4456,8 @@
       }
       init.dispatchPropertyName = init.getIsolateTag("dispatch_record");
     }();
-    hunkHelpers.setOrUpdateInterceptorsByTag({ApplicationCacheErrorEvent: J.Interceptor, CanvasGradient: J.Interceptor, CanvasPattern: J.Interceptor, DOMError: J.Interceptor, ErrorEvent: J.Interceptor, Event: J.Interceptor, InputEvent: J.Interceptor, MediaError: J.Interceptor, NavigatorUserMediaError: J.Interceptor, OverconstrainedError: J.Interceptor, PositionError: J.Interceptor, SensorErrorEvent: J.Interceptor, SpeechRecognitionError: J.Interceptor, WebGLRenderingContext: J.Interceptor, WebGL2RenderingContext: J.Interceptor, SQLError: J.Interceptor, HTMLAudioElement: W.HtmlElement, HTMLBRElement: W.HtmlElement, HTMLBaseElement: W.HtmlElement, HTMLBodyElement: W.HtmlElement, HTMLButtonElement: W.HtmlElement, HTMLContentElement: W.HtmlElement, HTMLDListElement: W.HtmlElement, HTMLDataElement: W.HtmlElement, HTMLDataListElement: W.HtmlElement, HTMLDetailsElement: W.HtmlElement, HTMLDialogElement: W.HtmlElement, HTMLDivElement: W.HtmlElement, HTMLEmbedElement: W.HtmlElement, HTMLFieldSetElement: W.HtmlElement, HTMLHRElement: W.HtmlElement, HTMLHeadElement: W.HtmlElement, HTMLHeadingElement: W.HtmlElement, HTMLHtmlElement: W.HtmlElement, HTMLIFrameElement: W.HtmlElement, HTMLImageElement: W.HtmlElement, HTMLInputElement: W.HtmlElement, HTMLLIElement: W.HtmlElement, HTMLLabelElement: W.HtmlElement, HTMLLegendElement: W.HtmlElement, HTMLLinkElement: W.HtmlElement, HTMLMapElement: W.HtmlElement, HTMLMediaElement: W.HtmlElement, HTMLMenuElement: W.HtmlElement, HTMLMetaElement: W.HtmlElement, HTMLMeterElement: W.HtmlElement, HTMLModElement: W.HtmlElement, HTMLOListElement: W.HtmlElement, HTMLObjectElement: W.HtmlElement, HTMLOptGroupElement: W.HtmlElement, HTMLOptionElement: W.HtmlElement, HTMLOutputElement: W.HtmlElement, HTMLParagraphElement: W.HtmlElement, HTMLParamElement: W.HtmlElement, HTMLPictureElement: W.HtmlElement, HTMLPreElement: W.HtmlElement, HTMLProgressElement: W.HtmlElement, HTMLQuoteElement: W.HtmlElement, HTMLScriptElement: W.HtmlElement, HTMLShadowElement: W.HtmlElement, HTMLSlotElement: W.HtmlElement, HTMLSourceElement: W.HtmlElement, HTMLSpanElement: W.HtmlElement, HTMLStyleElement: W.HtmlElement, HTMLTableCaptionElement: W.HtmlElement, HTMLTableCellElement: W.HtmlElement, HTMLTableDataCellElement: W.HtmlElement, HTMLTableHeaderCellElement: W.HtmlElement, HTMLTableColElement: W.HtmlElement, HTMLTableElement: W.HtmlElement, HTMLTableRowElement: W.HtmlElement, HTMLTableSectionElement: W.HtmlElement, HTMLTemplateElement: W.HtmlElement, HTMLTextAreaElement: W.HtmlElement, HTMLTimeElement: W.HtmlElement, HTMLTitleElement: W.HtmlElement, HTMLTrackElement: W.HtmlElement, HTMLUListElement: W.HtmlElement, HTMLUnknownElement: W.HtmlElement, HTMLVideoElement: W.HtmlElement, HTMLDirectoryElement: W.HtmlElement, HTMLFontElement: W.HtmlElement, HTMLFrameElement: W.HtmlElement, HTMLFrameSetElement: W.HtmlElement, HTMLMarqueeElement: W.HtmlElement, HTMLElement: W.HtmlElement, HTMLAnchorElement: W.AnchorElement, HTMLAreaElement: W.AreaElement, HTMLCanvasElement: W.CanvasElement, CanvasRenderingContext2D: W.CanvasRenderingContext2D, DOMException: W.DomException, Element: W.Element, EventTarget: W.EventTarget, HTMLFormElement: W.FormElement, Document: W.Node, HTMLDocument: W.Node, Node: W.Node, HTMLSelectElement: W.SelectElement, SVGAElement: P.SvgElement, SVGAnimateElement: P.SvgElement, SVGAnimateMotionElement: P.SvgElement, SVGAnimateTransformElement: P.SvgElement, SVGAnimationElement: P.SvgElement, SVGCircleElement: P.SvgElement, SVGClipPathElement: P.SvgElement, SVGDefsElement: P.SvgElement, SVGDescElement: P.SvgElement, SVGDiscardElement: P.SvgElement, SVGEllipseElement: P.SvgElement, SVGFEBlendElement: P.SvgElement, SVGFEColorMatrixElement: P.SvgElement, SVGFEComponentTransferElement: P.SvgElement, SVGFECompositeElement: P.SvgElement, SVGFEConvolveMatrixElement: P.SvgElement, SVGFEDiffuseLightingElement: P.SvgElement, SVGFEDisplacementMapElement: P.SvgElement, SVGFEDistantLightElement: P.SvgElement, SVGFEFloodElement: P.SvgElement, SVGFEFuncAElement: P.SvgElement, SVGFEFuncBElement: P.SvgElement, SVGFEFuncGElement: P.SvgElement, SVGFEFuncRElement: P.SvgElement, SVGFEGaussianBlurElement: P.SvgElement, SVGFEImageElement: P.SvgElement, SVGFEMergeElement: P.SvgElement, SVGFEMergeNodeElement: P.SvgElement, SVGFEMorphologyElement: P.SvgElement, SVGFEOffsetElement: P.SvgElement, SVGFEPointLightElement: P.SvgElement, SVGFESpecularLightingElement: P.SvgElement, SVGFESpotLightElement: P.SvgElement, SVGFETileElement: P.SvgElement, SVGFETurbulenceElement: P.SvgElement, SVGFilterElement: P.SvgElement, SVGForeignObjectElement: P.SvgElement, SVGGElement: P.SvgElement, SVGGeometryElement: P.SvgElement, SVGGraphicsElement: P.SvgElement, SVGImageElement: P.SvgElement, SVGLineElement: P.SvgElement, SVGLinearGradientElement: P.SvgElement, SVGMarkerElement: P.SvgElement, SVGMaskElement: P.SvgElement, SVGMetadataElement: P.SvgElement, SVGPathElement: P.SvgElement, SVGPatternElement: P.SvgElement, SVGPolygonElement: P.SvgElement, SVGPolylineElement: P.SvgElement, SVGRadialGradientElement: P.SvgElement, SVGRectElement: P.SvgElement, SVGScriptElement: P.SvgElement, SVGSetElement: P.SvgElement, SVGStopElement: P.SvgElement, SVGStyleElement: P.SvgElement, SVGElement: P.SvgElement, SVGSVGElement: P.SvgElement, SVGSwitchElement: P.SvgElement, SVGSymbolElement: P.SvgElement, SVGTSpanElement: P.SvgElement, SVGTextContentElement: P.SvgElement, SVGTextElement: P.SvgElement, SVGTextPathElement: P.SvgElement, SVGTextPositioningElement: P.SvgElement, SVGTitleElement: P.SvgElement, SVGUseElement: P.SvgElement, SVGViewElement: P.SvgElement, SVGGradientElement: P.SvgElement, SVGComponentTransferFunctionElement: P.SvgElement, SVGFEDropShadowElement: P.SvgElement, SVGMPathElement: P.SvgElement});
-    hunkHelpers.setOrUpdateLeafTags({ApplicationCacheErrorEvent: true, CanvasGradient: true, CanvasPattern: true, DOMError: true, ErrorEvent: true, Event: true, InputEvent: true, MediaError: true, NavigatorUserMediaError: true, OverconstrainedError: true, PositionError: true, SensorErrorEvent: true, SpeechRecognitionError: true, WebGLRenderingContext: true, WebGL2RenderingContext: true, SQLError: true, HTMLAudioElement: true, HTMLBRElement: true, HTMLBaseElement: true, HTMLBodyElement: true, HTMLButtonElement: true, HTMLContentElement: true, HTMLDListElement: true, HTMLDataElement: true, HTMLDataListElement: true, HTMLDetailsElement: true, HTMLDialogElement: true, HTMLDivElement: true, HTMLEmbedElement: true, HTMLFieldSetElement: true, HTMLHRElement: true, HTMLHeadElement: true, HTMLHeadingElement: true, HTMLHtmlElement: true, HTMLIFrameElement: true, HTMLImageElement: true, HTMLInputElement: true, HTMLLIElement: true, HTMLLabelElement: true, HTMLLegendElement: true, HTMLLinkElement: true, HTMLMapElement: true, HTMLMediaElement: true, HTMLMenuElement: true, HTMLMetaElement: true, HTMLMeterElement: true, HTMLModElement: true, HTMLOListElement: true, HTMLObjectElement: true, HTMLOptGroupElement: true, HTMLOptionElement: true, HTMLOutputElement: true, HTMLParagraphElement: true, HTMLParamElement: true, HTMLPictureElement: true, HTMLPreElement: true, HTMLProgressElement: true, HTMLQuoteElement: true, HTMLScriptElement: true, HTMLShadowElement: true, HTMLSlotElement: true, HTMLSourceElement: true, HTMLSpanElement: true, HTMLStyleElement: true, HTMLTableCaptionElement: true, HTMLTableCellElement: true, HTMLTableDataCellElement: true, HTMLTableHeaderCellElement: true, HTMLTableColElement: true, HTMLTableElement: true, HTMLTableRowElement: true, HTMLTableSectionElement: true, HTMLTemplateElement: true, HTMLTextAreaElement: true, HTMLTimeElement: true, HTMLTitleElement: true, HTMLTrackElement: true, HTMLUListElement: true, HTMLUnknownElement: true, HTMLVideoElement: true, HTMLDirectoryElement: true, HTMLFontElement: true, HTMLFrameElement: true, HTMLFrameSetElement: true, HTMLMarqueeElement: true, HTMLElement: false, HTMLAnchorElement: true, HTMLAreaElement: true, HTMLCanvasElement: true, CanvasRenderingContext2D: true, DOMException: true, Element: false, EventTarget: false, HTMLFormElement: true, Document: true, HTMLDocument: true, Node: false, HTMLSelectElement: true, SVGAElement: true, SVGAnimateElement: true, SVGAnimateMotionElement: true, SVGAnimateTransformElement: true, SVGAnimationElement: true, SVGCircleElement: true, SVGClipPathElement: true, SVGDefsElement: true, SVGDescElement: true, SVGDiscardElement: true, SVGEllipseElement: true, SVGFEBlendElement: true, SVGFEColorMatrixElement: true, SVGFEComponentTransferElement: true, SVGFECompositeElement: true, SVGFEConvolveMatrixElement: true, SVGFEDiffuseLightingElement: true, SVGFEDisplacementMapElement: true, SVGFEDistantLightElement: true, SVGFEFloodElement: true, SVGFEFuncAElement: true, SVGFEFuncBElement: true, SVGFEFuncGElement: true, SVGFEFuncRElement: true, SVGFEGaussianBlurElement: true, SVGFEImageElement: true, SVGFEMergeElement: true, SVGFEMergeNodeElement: true, SVGFEMorphologyElement: true, SVGFEOffsetElement: true, SVGFEPointLightElement: true, SVGFESpecularLightingElement: true, SVGFESpotLightElement: true, SVGFETileElement: true, SVGFETurbulenceElement: true, SVGFilterElement: true, SVGForeignObjectElement: true, SVGGElement: true, SVGGeometryElement: true, SVGGraphicsElement: true, SVGImageElement: true, SVGLineElement: true, SVGLinearGradientElement: true, SVGMarkerElement: true, SVGMaskElement: true, SVGMetadataElement: true, SVGPathElement: true, SVGPatternElement: true, SVGPolygonElement: true, SVGPolylineElement: true, SVGRadialGradientElement: true, SVGRectElement: true, SVGScriptElement: true, SVGSetElement: true, SVGStopElement: true, SVGStyleElement: true, SVGElement: true, SVGSVGElement: true, SVGSwitchElement: true, SVGSymbolElement: true, SVGTSpanElement: true, SVGTextContentElement: true, SVGTextElement: true, SVGTextPathElement: true, SVGTextPositioningElement: true, SVGTitleElement: true, SVGUseElement: true, SVGViewElement: true, SVGGradientElement: true, SVGComponentTransferFunctionElement: true, SVGFEDropShadowElement: true, SVGMPathElement: true});
+    hunkHelpers.setOrUpdateInterceptorsByTag({CanvasGradient: J.Interceptor, CanvasPattern: J.Interceptor, DOMError: J.Interceptor, MediaError: J.Interceptor, NavigatorUserMediaError: J.Interceptor, OverconstrainedError: J.Interceptor, PositionError: J.Interceptor, WebGLRenderingContext: J.Interceptor, WebGL2RenderingContext: J.Interceptor, SQLError: J.Interceptor, HTMLAudioElement: W.HtmlElement, HTMLBRElement: W.HtmlElement, HTMLBaseElement: W.HtmlElement, HTMLBodyElement: W.HtmlElement, HTMLButtonElement: W.HtmlElement, HTMLContentElement: W.HtmlElement, HTMLDListElement: W.HtmlElement, HTMLDataElement: W.HtmlElement, HTMLDataListElement: W.HtmlElement, HTMLDetailsElement: W.HtmlElement, HTMLDialogElement: W.HtmlElement, HTMLDivElement: W.HtmlElement, HTMLEmbedElement: W.HtmlElement, HTMLFieldSetElement: W.HtmlElement, HTMLHRElement: W.HtmlElement, HTMLHeadElement: W.HtmlElement, HTMLHeadingElement: W.HtmlElement, HTMLHtmlElement: W.HtmlElement, HTMLIFrameElement: W.HtmlElement, HTMLImageElement: W.HtmlElement, HTMLInputElement: W.HtmlElement, HTMLLIElement: W.HtmlElement, HTMLLabelElement: W.HtmlElement, HTMLLegendElement: W.HtmlElement, HTMLLinkElement: W.HtmlElement, HTMLMapElement: W.HtmlElement, HTMLMediaElement: W.HtmlElement, HTMLMenuElement: W.HtmlElement, HTMLMetaElement: W.HtmlElement, HTMLMeterElement: W.HtmlElement, HTMLModElement: W.HtmlElement, HTMLOListElement: W.HtmlElement, HTMLObjectElement: W.HtmlElement, HTMLOptGroupElement: W.HtmlElement, HTMLOptionElement: W.HtmlElement, HTMLOutputElement: W.HtmlElement, HTMLParagraphElement: W.HtmlElement, HTMLParamElement: W.HtmlElement, HTMLPictureElement: W.HtmlElement, HTMLPreElement: W.HtmlElement, HTMLProgressElement: W.HtmlElement, HTMLQuoteElement: W.HtmlElement, HTMLScriptElement: W.HtmlElement, HTMLShadowElement: W.HtmlElement, HTMLSlotElement: W.HtmlElement, HTMLSourceElement: W.HtmlElement, HTMLSpanElement: W.HtmlElement, HTMLStyleElement: W.HtmlElement, HTMLTableCaptionElement: W.HtmlElement, HTMLTableCellElement: W.HtmlElement, HTMLTableDataCellElement: W.HtmlElement, HTMLTableHeaderCellElement: W.HtmlElement, HTMLTableColElement: W.HtmlElement, HTMLTableElement: W.HtmlElement, HTMLTableRowElement: W.HtmlElement, HTMLTableSectionElement: W.HtmlElement, HTMLTemplateElement: W.HtmlElement, HTMLTextAreaElement: W.HtmlElement, HTMLTimeElement: W.HtmlElement, HTMLTitleElement: W.HtmlElement, HTMLTrackElement: W.HtmlElement, HTMLUListElement: W.HtmlElement, HTMLUnknownElement: W.HtmlElement, HTMLVideoElement: W.HtmlElement, HTMLDirectoryElement: W.HtmlElement, HTMLFontElement: W.HtmlElement, HTMLFrameElement: W.HtmlElement, HTMLFrameSetElement: W.HtmlElement, HTMLMarqueeElement: W.HtmlElement, HTMLElement: W.HtmlElement, HTMLAnchorElement: W.AnchorElement, HTMLAreaElement: W.AreaElement, HTMLCanvasElement: W.CanvasElement, CanvasRenderingContext2D: W.CanvasRenderingContext2D, DOMException: W.DomException, Element: W.Element, AbortPaymentEvent: W.Event, AnimationEvent: W.Event, AnimationPlaybackEvent: W.Event, ApplicationCacheErrorEvent: W.Event, BackgroundFetchClickEvent: W.Event, BackgroundFetchEvent: W.Event, BackgroundFetchFailEvent: W.Event, BackgroundFetchedEvent: W.Event, BeforeInstallPromptEvent: W.Event, BeforeUnloadEvent: W.Event, BlobEvent: W.Event, CanMakePaymentEvent: W.Event, ClipboardEvent: W.Event, CloseEvent: W.Event, CustomEvent: W.Event, DeviceMotionEvent: W.Event, DeviceOrientationEvent: W.Event, ErrorEvent: W.Event, ExtendableEvent: W.Event, ExtendableMessageEvent: W.Event, FetchEvent: W.Event, FontFaceSetLoadEvent: W.Event, ForeignFetchEvent: W.Event, GamepadEvent: W.Event, HashChangeEvent: W.Event, InstallEvent: W.Event, MediaEncryptedEvent: W.Event, MediaKeyMessageEvent: W.Event, MediaQueryListEvent: W.Event, MediaStreamEvent: W.Event, MediaStreamTrackEvent: W.Event, MessageEvent: W.Event, MIDIConnectionEvent: W.Event, MIDIMessageEvent: W.Event, MutationEvent: W.Event, NotificationEvent: W.Event, PageTransitionEvent: W.Event, PaymentRequestEvent: W.Event, PaymentRequestUpdateEvent: W.Event, PopStateEvent: W.Event, PresentationConnectionAvailableEvent: W.Event, PresentationConnectionCloseEvent: W.Event, ProgressEvent: W.Event, PromiseRejectionEvent: W.Event, PushEvent: W.Event, RTCDataChannelEvent: W.Event, RTCDTMFToneChangeEvent: W.Event, RTCPeerConnectionIceEvent: W.Event, RTCTrackEvent: W.Event, SecurityPolicyViolationEvent: W.Event, SensorErrorEvent: W.Event, SpeechRecognitionError: W.Event, SpeechRecognitionEvent: W.Event, SpeechSynthesisEvent: W.Event, StorageEvent: W.Event, SyncEvent: W.Event, TrackEvent: W.Event, TransitionEvent: W.Event, WebKitTransitionEvent: W.Event, VRDeviceEvent: W.Event, VRDisplayEvent: W.Event, VRSessionEvent: W.Event, MojoInterfaceRequestEvent: W.Event, ResourceProgressEvent: W.Event, USBConnectionEvent: W.Event, IDBVersionChangeEvent: W.Event, AudioProcessingEvent: W.Event, OfflineAudioCompletionEvent: W.Event, WebGLContextEvent: W.Event, Event: W.Event, InputEvent: W.Event, EventTarget: W.EventTarget, HTMLFormElement: W.FormElement, KeyboardEvent: W.KeyboardEvent, Document: W.Node, HTMLDocument: W.Node, Node: W.Node, HTMLSelectElement: W.SelectElement, CompositionEvent: W.UIEvent, FocusEvent: W.UIEvent, MouseEvent: W.UIEvent, DragEvent: W.UIEvent, PointerEvent: W.UIEvent, TextEvent: W.UIEvent, TouchEvent: W.UIEvent, WheelEvent: W.UIEvent, UIEvent: W.UIEvent, Window: W.Window, DOMWindow: W.Window, SVGAElement: P.SvgElement, SVGAnimateElement: P.SvgElement, SVGAnimateMotionElement: P.SvgElement, SVGAnimateTransformElement: P.SvgElement, SVGAnimationElement: P.SvgElement, SVGCircleElement: P.SvgElement, SVGClipPathElement: P.SvgElement, SVGDefsElement: P.SvgElement, SVGDescElement: P.SvgElement, SVGDiscardElement: P.SvgElement, SVGEllipseElement: P.SvgElement, SVGFEBlendElement: P.SvgElement, SVGFEColorMatrixElement: P.SvgElement, SVGFEComponentTransferElement: P.SvgElement, SVGFECompositeElement: P.SvgElement, SVGFEConvolveMatrixElement: P.SvgElement, SVGFEDiffuseLightingElement: P.SvgElement, SVGFEDisplacementMapElement: P.SvgElement, SVGFEDistantLightElement: P.SvgElement, SVGFEFloodElement: P.SvgElement, SVGFEFuncAElement: P.SvgElement, SVGFEFuncBElement: P.SvgElement, SVGFEFuncGElement: P.SvgElement, SVGFEFuncRElement: P.SvgElement, SVGFEGaussianBlurElement: P.SvgElement, SVGFEImageElement: P.SvgElement, SVGFEMergeElement: P.SvgElement, SVGFEMergeNodeElement: P.SvgElement, SVGFEMorphologyElement: P.SvgElement, SVGFEOffsetElement: P.SvgElement, SVGFEPointLightElement: P.SvgElement, SVGFESpecularLightingElement: P.SvgElement, SVGFESpotLightElement: P.SvgElement, SVGFETileElement: P.SvgElement, SVGFETurbulenceElement: P.SvgElement, SVGFilterElement: P.SvgElement, SVGForeignObjectElement: P.SvgElement, SVGGElement: P.SvgElement, SVGGeometryElement: P.SvgElement, SVGGraphicsElement: P.SvgElement, SVGImageElement: P.SvgElement, SVGLineElement: P.SvgElement, SVGLinearGradientElement: P.SvgElement, SVGMarkerElement: P.SvgElement, SVGMaskElement: P.SvgElement, SVGMetadataElement: P.SvgElement, SVGPathElement: P.SvgElement, SVGPatternElement: P.SvgElement, SVGPolygonElement: P.SvgElement, SVGPolylineElement: P.SvgElement, SVGRadialGradientElement: P.SvgElement, SVGRectElement: P.SvgElement, SVGScriptElement: P.SvgElement, SVGSetElement: P.SvgElement, SVGStopElement: P.SvgElement, SVGStyleElement: P.SvgElement, SVGElement: P.SvgElement, SVGSVGElement: P.SvgElement, SVGSwitchElement: P.SvgElement, SVGSymbolElement: P.SvgElement, SVGTSpanElement: P.SvgElement, SVGTextContentElement: P.SvgElement, SVGTextElement: P.SvgElement, SVGTextPathElement: P.SvgElement, SVGTextPositioningElement: P.SvgElement, SVGTitleElement: P.SvgElement, SVGUseElement: P.SvgElement, SVGViewElement: P.SvgElement, SVGGradientElement: P.SvgElement, SVGComponentTransferFunctionElement: P.SvgElement, SVGFEDropShadowElement: P.SvgElement, SVGMPathElement: P.SvgElement});
+    hunkHelpers.setOrUpdateLeafTags({CanvasGradient: true, CanvasPattern: true, DOMError: true, MediaError: true, NavigatorUserMediaError: true, OverconstrainedError: true, PositionError: true, WebGLRenderingContext: true, WebGL2RenderingContext: true, SQLError: true, HTMLAudioElement: true, HTMLBRElement: true, HTMLBaseElement: true, HTMLBodyElement: true, HTMLButtonElement: true, HTMLContentElement: true, HTMLDListElement: true, HTMLDataElement: true, HTMLDataListElement: true, HTMLDetailsElement: true, HTMLDialogElement: true, HTMLDivElement: true, HTMLEmbedElement: true, HTMLFieldSetElement: true, HTMLHRElement: true, HTMLHeadElement: true, HTMLHeadingElement: true, HTMLHtmlElement: true, HTMLIFrameElement: true, HTMLImageElement: true, HTMLInputElement: true, HTMLLIElement: true, HTMLLabelElement: true, HTMLLegendElement: true, HTMLLinkElement: true, HTMLMapElement: true, HTMLMediaElement: true, HTMLMenuElement: true, HTMLMetaElement: true, HTMLMeterElement: true, HTMLModElement: true, HTMLOListElement: true, HTMLObjectElement: true, HTMLOptGroupElement: true, HTMLOptionElement: true, HTMLOutputElement: true, HTMLParagraphElement: true, HTMLParamElement: true, HTMLPictureElement: true, HTMLPreElement: true, HTMLProgressElement: true, HTMLQuoteElement: true, HTMLScriptElement: true, HTMLShadowElement: true, HTMLSlotElement: true, HTMLSourceElement: true, HTMLSpanElement: true, HTMLStyleElement: true, HTMLTableCaptionElement: true, HTMLTableCellElement: true, HTMLTableDataCellElement: true, HTMLTableHeaderCellElement: true, HTMLTableColElement: true, HTMLTableElement: true, HTMLTableRowElement: true, HTMLTableSectionElement: true, HTMLTemplateElement: true, HTMLTextAreaElement: true, HTMLTimeElement: true, HTMLTitleElement: true, HTMLTrackElement: true, HTMLUListElement: true, HTMLUnknownElement: true, HTMLVideoElement: true, HTMLDirectoryElement: true, HTMLFontElement: true, HTMLFrameElement: true, HTMLFrameSetElement: true, HTMLMarqueeElement: true, HTMLElement: false, HTMLAnchorElement: true, HTMLAreaElement: true, HTMLCanvasElement: true, CanvasRenderingContext2D: true, DOMException: true, Element: false, AbortPaymentEvent: true, AnimationEvent: true, AnimationPlaybackEvent: true, ApplicationCacheErrorEvent: true, BackgroundFetchClickEvent: true, BackgroundFetchEvent: true, BackgroundFetchFailEvent: true, BackgroundFetchedEvent: true, BeforeInstallPromptEvent: true, BeforeUnloadEvent: true, BlobEvent: true, CanMakePaymentEvent: true, ClipboardEvent: true, CloseEvent: true, CustomEvent: true, DeviceMotionEvent: true, DeviceOrientationEvent: true, ErrorEvent: true, ExtendableEvent: true, ExtendableMessageEvent: true, FetchEvent: true, FontFaceSetLoadEvent: true, ForeignFetchEvent: true, GamepadEvent: true, HashChangeEvent: true, InstallEvent: true, MediaEncryptedEvent: true, MediaKeyMessageEvent: true, MediaQueryListEvent: true, MediaStreamEvent: true, MediaStreamTrackEvent: true, MessageEvent: true, MIDIConnectionEvent: true, MIDIMessageEvent: true, MutationEvent: true, NotificationEvent: true, PageTransitionEvent: true, PaymentRequestEvent: true, PaymentRequestUpdateEvent: true, PopStateEvent: true, PresentationConnectionAvailableEvent: true, PresentationConnectionCloseEvent: true, ProgressEvent: true, PromiseRejectionEvent: true, PushEvent: true, RTCDataChannelEvent: true, RTCDTMFToneChangeEvent: true, RTCPeerConnectionIceEvent: true, RTCTrackEvent: true, SecurityPolicyViolationEvent: true, SensorErrorEvent: true, SpeechRecognitionError: true, SpeechRecognitionEvent: true, SpeechSynthesisEvent: true, StorageEvent: true, SyncEvent: true, TrackEvent: true, TransitionEvent: true, WebKitTransitionEvent: true, VRDeviceEvent: true, VRDisplayEvent: true, VRSessionEvent: true, MojoInterfaceRequestEvent: true, ResourceProgressEvent: true, USBConnectionEvent: true, IDBVersionChangeEvent: true, AudioProcessingEvent: true, OfflineAudioCompletionEvent: true, WebGLContextEvent: true, Event: false, InputEvent: false, EventTarget: false, HTMLFormElement: true, KeyboardEvent: true, Document: true, HTMLDocument: true, Node: false, HTMLSelectElement: true, CompositionEvent: true, FocusEvent: true, MouseEvent: true, DragEvent: true, PointerEvent: true, TextEvent: true, TouchEvent: true, WheelEvent: true, UIEvent: false, Window: true, DOMWindow: true, SVGAElement: true, SVGAnimateElement: true, SVGAnimateMotionElement: true, SVGAnimateTransformElement: true, SVGAnimationElement: true, SVGCircleElement: true, SVGClipPathElement: true, SVGDefsElement: true, SVGDescElement: true, SVGDiscardElement: true, SVGEllipseElement: true, SVGFEBlendElement: true, SVGFEColorMatrixElement: true, SVGFEComponentTransferElement: true, SVGFECompositeElement: true, SVGFEConvolveMatrixElement: true, SVGFEDiffuseLightingElement: true, SVGFEDisplacementMapElement: true, SVGFEDistantLightElement: true, SVGFEFloodElement: true, SVGFEFuncAElement: true, SVGFEFuncBElement: true, SVGFEFuncGElement: true, SVGFEFuncRElement: true, SVGFEGaussianBlurElement: true, SVGFEImageElement: true, SVGFEMergeElement: true, SVGFEMergeNodeElement: true, SVGFEMorphologyElement: true, SVGFEOffsetElement: true, SVGFEPointLightElement: true, SVGFESpecularLightingElement: true, SVGFESpotLightElement: true, SVGFETileElement: true, SVGFETurbulenceElement: true, SVGFilterElement: true, SVGForeignObjectElement: true, SVGGElement: true, SVGGeometryElement: true, SVGGraphicsElement: true, SVGImageElement: true, SVGLineElement: true, SVGLinearGradientElement: true, SVGMarkerElement: true, SVGMaskElement: true, SVGMetadataElement: true, SVGPathElement: true, SVGPatternElement: true, SVGPolygonElement: true, SVGPolylineElement: true, SVGRadialGradientElement: true, SVGRectElement: true, SVGScriptElement: true, SVGSetElement: true, SVGStopElement: true, SVGStyleElement: true, SVGElement: true, SVGSVGElement: true, SVGSwitchElement: true, SVGSymbolElement: true, SVGTSpanElement: true, SVGTextContentElement: true, SVGTextElement: true, SVGTextPathElement: true, SVGTextPositioningElement: true, SVGTitleElement: true, SVGUseElement: true, SVGViewElement: true, SVGGradientElement: true, SVGComponentTransferFunctionElement: true, SVGFEDropShadowElement: true, SVGMPathElement: true});
   })();
   convertAllToFastObject(holders);
   convertToFastObject($);
