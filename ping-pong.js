@@ -498,6 +498,16 @@
         return trace;
       return exception.$cachedTrace = new H._StackTrace(exception);
     },
+    fillLiteralMap: function(keyValuePairs, result) {
+      var index, index0, index1,
+        $length = keyValuePairs.length;
+      for (index = 0; index < $length; index = index1) {
+        index0 = index + 1;
+        index1 = index0 + 1;
+        result.$indexSet(0, keyValuePairs[index], keyValuePairs[index0]);
+      }
+      return result;
+    },
     invokeClosure: function(closure, numberOfArguments, arg1, arg2, arg3, arg4) {
       H.interceptedTypeCheck(closure, "$isFunction");
       switch (H.intTypeCheck(numberOfArguments)) {
@@ -1374,6 +1384,12 @@
         return string.replace(/[[\]{}()*+?.\\^$|]/g, "\\$&");
       return string;
     },
+    ConstantMap: function ConstantMap() {
+    },
+    GeneralConstantMap: function GeneralConstantMap(t0, t1) {
+      this._jsData = t0;
+      this.$ti = t1;
+    },
     TypeErrorDecoder: function TypeErrorDecoder(t0, t1, t2, t3, t4, t5) {
       var _ = this;
       _._pattern = t0;
@@ -1417,7 +1433,7 @@
       _._self = t0;
       _._target = t1;
       _._receiver = t2;
-      _.__js_helper$_name = t3;
+      _._name = t3;
     },
     TypeErrorImplementation: function TypeErrorImplementation(t0) {
       this.message = t0;
@@ -1427,6 +1443,29 @@
     },
     _AssertionError: function _AssertionError(t0) {
       this.message = t0;
+    },
+    JsLinkedHashMap: function JsLinkedHashMap(t0) {
+      var _ = this;
+      _._length = 0;
+      _._last = _._first = _._rest = _._nums = _._strings = null;
+      _._modifications = 0;
+      _.$ti = t0;
+    },
+    LinkedHashMapCell: function LinkedHashMapCell(t0, t1) {
+      this.hashMapCellKey = t0;
+      this.hashMapCellValue = t1;
+      this._next = null;
+    },
+    LinkedHashMapKeyIterable: function LinkedHashMapKeyIterable(t0, t1) {
+      this._map = t0;
+      this.$ti = t1;
+    },
+    LinkedHashMapKeyIterator: function LinkedHashMapKeyIterator(t0, t1, t2) {
+      var _ = this;
+      _._map = t0;
+      _._modifications = t1;
+      _.__js_helper$_current = _._cell = null;
+      _.$ti = t2;
     },
     initHooks_closure: function initHooks_closure(t0) {
       this.getTag = t0;
@@ -1588,7 +1627,7 @@
     ArrayIterator: function ArrayIterator(t0, t1, t2) {
       var _ = this;
       _._iterable = t0;
-      _._length = t1;
+      _.__interceptors$_length = t1;
       _._index = 0;
       _._current = null;
       _.$ti = t2;
@@ -2243,16 +2282,16 @@
     _HashMap: function _HashMap(t0) {
       var _ = this;
       _._collection$_length = 0;
-      _._keys = _._rest = _._nums = _._strings = null;
+      _._keys = _._collection$_rest = _._collection$_nums = _._collection$_strings = null;
       _.$ti = t0;
     },
     _HashMapKeyIterable: function _HashMapKeyIterable(t0, t1) {
-      this._map = t0;
+      this._collection$_map = t0;
       this.$ti = t1;
     },
     _HashMapKeyIterator: function _HashMapKeyIterator(t0, t1, t2) {
       var _ = this;
-      _._map = t0;
+      _._collection$_map = t0;
       _._keys = t1;
       _._offset = 0;
       _._collection$_current = null;
@@ -2458,47 +2497,27 @@
   },
   E = {
     main: function() {
-      var t1 = document,
+      var t3,
+        t1 = document,
         t2 = t1.querySelector("#canvas");
       J.focus$0$x(t2);
       H.interceptedTypeCheck(t2, "$isCanvasElement");
       $.canvas = t2;
       $.ctx = H.interceptedTypeCheck(C.CanvasElement_methods.getContext$1(t2, "2d"), "$isCanvasRenderingContext2D");
       $.keyboard = E.Keyboard$();
-      t1.querySelector("#text");
-      t1 = new E.Game();
-      E.clear();
-      t1.player1 = E.Player$($.$get$Player_player1InitialPosition(), "player1");
-      t1.player2 = E.Player$($.$get$Player_player2InitialPosition(), "player2");
-      t2 = new E.Point();
-      t2.y = t2.x = 50;
-      t1.ball = new E.Ball(t2, $.$get$Ball_DOWN_RIGHT());
-      t1.run$0();
-    },
-    clear: function() {
-      var t2, t3,
-        t1 = $.ctx;
-      t1.fillStyle = "black";
-      t2 = $.canvas;
-      t1.fillRect(0, 0, t2.width, t2.height);
-      t2 = $.canvas.width;
-      if (typeof t2 !== "number")
-        return t2.$tdiv();
-      t2 = C.JSInt_methods._tdivFast$1(t2, 2);
-      t1 = $.ctx;
-      t1.strokeStyle = "#00CC00";
-      t3 = [P.num];
-      t3 = H.assertSubtype(H.setRuntimeTypeInfo([20, 20], t3), "$isList", t3, "$asList");
-      if (!!t1.setLineDash)
-        t1.setLineDash(t3);
-      else if (!!t1.webkitLineDash)
-        t1.webkitLineDash = t3;
-      typeof t1.lineDashOffset != "undefined" ? t1.lineDashOffset = 10 : t1.webkitLineDashOffset = 10;
-      t1.lineWidth = 10;
-      t1.beginPath();
-      t1.moveTo(t2, 0);
-      t1.lineTo(t2, $.canvas.height);
-      t1.stroke();
+      $.text = t1.querySelector("#text");
+      $.player1 = E.Player$($.$get$Player_player1InitialPosition(), "player1");
+      $.player2 = E.Player$($.$get$Player_player2InitialPosition(), "player2");
+      $.ball = new E.Ball($.$get$Ball_P1_SERVICE(), $.$get$Ball_DOWN_RIGHT());
+      t2 = [W.Element];
+      t3 = H.setRuntimeTypeInfo([t1.querySelector("#scoreboard_left_up"), t1.querySelector("#scoreboard_left_bottom")], t2);
+      t2 = H.setRuntimeTypeInfo([t1.querySelector("#scoreboard_right_up"), t1.querySelector("#scoreboard_right_bottom")], t2);
+      t3[0].className = C.Map_JNkeG.$index(0, 0)[0];
+      t3[1].className = C.Map_JNkeG.$index(0, 0)[1];
+      t2[0].className = C.Map_JNkeG.$index(0, 0)[0];
+      t2[1].className = C.Map_JNkeG.$index(0, 0)[1];
+      $.scoreboard = new E.Scoreboard(t3, t2);
+      new E.Game().run$0();
     },
     Keyboard$: function() {
       var t1 = new E.Keyboard(P.HashMap_HashMap(P.int, P.num));
@@ -2539,21 +2558,25 @@
     Point: function Point() {
       this.y = this.x = null;
     },
-    Ball: function Ball(t0, t1) {
-      this._position = t0;
-      this.dir = t1;
+    Scoreboard: function Scoreboard(t0, t1) {
+      this._p1 = t0;
+      this._p2 = t1;
     },
     Player: function Player(t0, t1) {
       var _ = this;
       _._keyDown = _._keyUp = null;
       _._position = t0;
       _._dir = null;
-      _._name = t1;
+      _._ping2dpong$_name = t1;
+      _.score = 0;
+    },
+    Ball: function Ball(t0, t1) {
+      this._position = t0;
+      this._dir = t1;
+      this._pointWinner = null;
     },
     Game: function Game() {
-      var _ = this;
-      _._lastTimeStamp = 0;
-      _.ball = _.player2 = _.player1 = null;
+      this._lastTimeStamp = 0;
     }
   };
   var holders = [C, H, J, P, W, E];
@@ -2639,7 +2662,7 @@
       var t2, _this = this,
         t1 = _this._iterable,
         $length = t1.length;
-      if (_this._length !== $length)
+      if (_this.__interceptors$_length !== $length)
         throw H.wrapException(H.throwConcurrentModificationError(t1));
       t2 = _this._index;
       if (t2 >= $length) {
@@ -2734,6 +2757,34 @@
     $isString: 1
   };
   H.EfficientLengthIterable.prototype = {};
+  H.ConstantMap.prototype = {
+    toString$0: function(_) {
+      return P.MapBase_mapToString(this);
+    },
+    $isMap: 1
+  };
+  H.GeneralConstantMap.prototype = {
+    _getMap$0: function() {
+      var _this = this,
+        backingMap = _this.$map;
+      if (backingMap == null) {
+        backingMap = new H.JsLinkedHashMap(_this.$ti);
+        H.fillLiteralMap(_this._jsData, backingMap);
+        _this.$map = backingMap;
+      }
+      return backingMap;
+    },
+    $index: function(_, key) {
+      return this._getMap$0().$index(0, key);
+    },
+    forEach$1: function(_, f) {
+      H.functionTypeCheck(f, {func: 1, ret: -1, args: [H.getTypeArgumentByIndex(this, 0), H.getTypeArgumentByIndex(this, 1)]});
+      this._getMap$0().forEach$1(0, f);
+    },
+    get$length: function(_) {
+      return this._getMap$0()._length;
+    }
+  };
   H.TypeErrorDecoder.prototype = {
     matchTypeError$1: function(message) {
       var result, t1, _this = this,
@@ -2855,7 +2906,7 @@
       var receiver = this._receiver;
       if (receiver == null)
         receiver = this._self;
-      return "Closure '" + H.S(this.__js_helper$_name) + "' of " + ("Instance of '" + H.S(H.Primitives_objectTypeName(receiver)) + "'");
+      return "Closure '" + H.S(this._name) + "' of " + ("Instance of '" + H.S(H.Primitives_objectTypeName(receiver)) + "'");
     }
   };
   H.TypeErrorImplementation.prototype = {
@@ -2871,6 +2922,173 @@
   H._AssertionError.prototype = {
     toString$0: function(_) {
       return "Assertion failed: " + P.Error_safeToString(this.message);
+    }
+  };
+  H.JsLinkedHashMap.prototype = {
+    get$length: function(_) {
+      return this._length;
+    },
+    get$keys: function() {
+      return new H.LinkedHashMapKeyIterable(this, [H.getTypeArgumentByIndex(this, 0)]);
+    },
+    $index: function(_, key) {
+      var strings, cell, t1, nums, _this = this;
+      if (typeof key === "string") {
+        strings = _this._strings;
+        if (strings == null)
+          return;
+        cell = _this._getTableCell$2(strings, key);
+        t1 = cell == null ? null : cell.hashMapCellValue;
+        return t1;
+      } else if (typeof key === "number" && (key & 0x3ffffff) === key) {
+        nums = _this._nums;
+        if (nums == null)
+          return;
+        cell = _this._getTableCell$2(nums, key);
+        t1 = cell == null ? null : cell.hashMapCellValue;
+        return t1;
+      } else
+        return _this.internalGet$1(key);
+    },
+    internalGet$1: function(key) {
+      var bucket, index,
+        rest = this._rest;
+      if (rest == null)
+        return;
+      bucket = this._getTableBucket$2(rest, J.get$hashCode$(key) & 0x3ffffff);
+      index = this.internalFindBucketIndex$2(bucket, key);
+      if (index < 0)
+        return;
+      return bucket[index].hashMapCellValue;
+    },
+    $indexSet: function(_, key, value) {
+      var strings, nums, rest, hash, bucket, index, _this = this;
+      H.assertSubtypeOfRuntimeType(key, H.getTypeArgumentByIndex(_this, 0));
+      H.assertSubtypeOfRuntimeType(value, H.getTypeArgumentByIndex(_this, 1));
+      if (typeof key === "string") {
+        strings = _this._strings;
+        _this._addHashTableEntry$3(strings == null ? _this._strings = _this._newHashTable$0() : strings, key, value);
+      } else if (typeof key === "number" && (key & 0x3ffffff) === key) {
+        nums = _this._nums;
+        _this._addHashTableEntry$3(nums == null ? _this._nums = _this._newHashTable$0() : nums, key, value);
+      } else {
+        rest = _this._rest;
+        if (rest == null)
+          rest = _this._rest = _this._newHashTable$0();
+        hash = J.get$hashCode$(key) & 0x3ffffff;
+        bucket = _this._getTableBucket$2(rest, hash);
+        if (bucket == null)
+          _this._setTableEntry$3(rest, hash, [_this._newLinkedCell$2(key, value)]);
+        else {
+          index = _this.internalFindBucketIndex$2(bucket, key);
+          if (index >= 0)
+            bucket[index].hashMapCellValue = value;
+          else
+            bucket.push(_this._newLinkedCell$2(key, value));
+        }
+      }
+    },
+    forEach$1: function(_, action) {
+      var cell, modifications, _this = this;
+      H.functionTypeCheck(action, {func: 1, ret: -1, args: [H.getTypeArgumentByIndex(_this, 0), H.getTypeArgumentByIndex(_this, 1)]});
+      cell = _this._first;
+      modifications = _this._modifications;
+      for (; cell != null;) {
+        action.call$2(cell.hashMapCellKey, cell.hashMapCellValue);
+        if (modifications !== _this._modifications)
+          throw H.wrapException(P.ConcurrentModificationError$(_this));
+        cell = cell._next;
+      }
+    },
+    _addHashTableEntry$3: function(table, key, value) {
+      var cell, _this = this;
+      H.assertSubtypeOfRuntimeType(key, H.getTypeArgumentByIndex(_this, 0));
+      H.assertSubtypeOfRuntimeType(value, H.getTypeArgumentByIndex(_this, 1));
+      cell = _this._getTableCell$2(table, key);
+      if (cell == null)
+        _this._setTableEntry$3(table, key, _this._newLinkedCell$2(key, value));
+      else
+        cell.hashMapCellValue = value;
+    },
+    _newLinkedCell$2: function(key, value) {
+      var _this = this,
+        cell = new H.LinkedHashMapCell(H.assertSubtypeOfRuntimeType(key, H.getTypeArgumentByIndex(_this, 0)), H.assertSubtypeOfRuntimeType(value, H.getTypeArgumentByIndex(_this, 1)));
+      if (_this._first == null)
+        _this._first = _this._last = cell;
+      else
+        _this._last = _this._last._next = cell;
+      ++_this._length;
+      _this._modifications = _this._modifications + 1 & 67108863;
+      return cell;
+    },
+    internalFindBucketIndex$2: function(bucket, key) {
+      var $length, i;
+      if (bucket == null)
+        return -1;
+      $length = bucket.length;
+      for (i = 0; i < $length; ++i)
+        if (J.$eq$(bucket[i].hashMapCellKey, key))
+          return i;
+      return -1;
+    },
+    toString$0: function(_) {
+      return P.MapBase_mapToString(this);
+    },
+    _getTableCell$2: function(table, key) {
+      return table[key];
+    },
+    _getTableBucket$2: function(table, key) {
+      return table[key];
+    },
+    _setTableEntry$3: function(table, key, value) {
+      table[key] = value;
+    },
+    _deleteTableEntry$2: function(table, key) {
+      delete table[key];
+    },
+    _newHashTable$0: function() {
+      var _s20_ = "<non-identifier-key>",
+        table = Object.create(null);
+      this._setTableEntry$3(table, _s20_, table);
+      this._deleteTableEntry$2(table, _s20_);
+      return table;
+    }
+  };
+  H.LinkedHashMapCell.prototype = {};
+  H.LinkedHashMapKeyIterable.prototype = {
+    get$length: function(_) {
+      return this._map._length;
+    },
+    get$iterator: function(_) {
+      var t1 = this._map,
+        t2 = new H.LinkedHashMapKeyIterator(t1, t1._modifications, this.$ti);
+      t2._cell = t1._first;
+      return t2;
+    }
+  };
+  H.LinkedHashMapKeyIterator.prototype = {
+    get$current: function() {
+      return this.__js_helper$_current;
+    },
+    moveNext$0: function() {
+      var _this = this,
+        t1 = _this._map;
+      if (_this._modifications !== t1._modifications)
+        throw H.wrapException(P.ConcurrentModificationError$(t1));
+      else {
+        t1 = _this._cell;
+        if (t1 == null) {
+          _this.set$__js_helper$_current(null);
+          return false;
+        } else {
+          _this.set$__js_helper$_current(t1.hashMapCellKey);
+          _this._cell = _this._cell._next;
+          return true;
+        }
+      }
+    },
+    set$__js_helper$_current: function(_current) {
+      this.__js_helper$_current = H.assertSubtypeOfRuntimeType(_current, H.getTypeArgumentByIndex(this, 0));
     }
   };
   H.initHooks_closure.prototype = {
@@ -3464,13 +3682,13 @@
     containsKey$1: function(key) {
       var nums;
       if (typeof key === "number" && (key & 1073741823) === key) {
-        nums = this._nums;
+        nums = this._collection$_nums;
         return nums == null ? false : nums[key] != null;
       } else
         return this._containsKey$1(key);
     },
     _containsKey$1: function(key) {
-      var rest = this._rest;
+      var rest = this._collection$_rest;
       if (rest == null)
         return false;
       return this._findBucketIndex$2(this._getBucket$2(rest, key), key) >= 0;
@@ -3478,11 +3696,11 @@
     $index: function(_, key) {
       var strings, t1, nums;
       if (typeof key === "string" && key !== "__proto__") {
-        strings = this._strings;
+        strings = this._collection$_strings;
         t1 = strings == null ? null : P._HashMap__getTableEntry(strings, key);
         return t1;
       } else if (typeof key === "number" && (key & 1073741823) === key) {
-        nums = this._nums;
+        nums = this._collection$_nums;
         t1 = nums == null ? null : P._HashMap__getTableEntry(nums, key);
         return t1;
       } else
@@ -3490,7 +3708,7 @@
     },
     _get$1: function(key) {
       var bucket, index,
-        rest = this._rest;
+        rest = this._collection$_rest;
       if (rest == null)
         return;
       bucket = this._getBucket$2(rest, key);
@@ -3502,8 +3720,8 @@
       H.assertSubtypeOfRuntimeType(key, H.getTypeArgumentByIndex(_this, 0));
       H.assertSubtypeOfRuntimeType(value, H.getTypeArgumentByIndex(_this, 1));
       if (typeof key === "number" && (key & 1073741823) === key) {
-        nums = _this._nums;
-        _this._addHashTableEntry$3(nums == null ? _this._nums = P._HashMap__newHashTable() : nums, key, value);
+        nums = _this._collection$_nums;
+        _this._collection$_addHashTableEntry$3(nums == null ? _this._collection$_nums = P._HashMap__newHashTable() : nums, key, value);
       } else
         _this._set$2(key, value);
     },
@@ -3511,9 +3729,9 @@
       var rest, hash, bucket, index, _this = this;
       H.assertSubtypeOfRuntimeType(key, H.getTypeArgumentByIndex(_this, 0));
       H.assertSubtypeOfRuntimeType(value, H.getTypeArgumentByIndex(_this, 1));
-      rest = _this._rest;
+      rest = _this._collection$_rest;
       if (rest == null)
-        rest = _this._rest = P._HashMap__newHashTable();
+        rest = _this._collection$_rest = P._HashMap__newHashTable();
       hash = _this._computeHashCode$1(key);
       bucket = rest[hash];
       if (bucket == null) {
@@ -3543,13 +3761,13 @@
     },
     remove$1: function(_, key) {
       if (typeof key === "number" && (key & 1073741823) === key)
-        return this._removeHashTableEntry$2(this._nums, key);
+        return this._removeHashTableEntry$2(this._collection$_nums, key);
       else
         return this._remove$1(key);
     },
     _remove$1: function(key) {
       var bucket, index, _this = this,
-        rest = _this._rest;
+        rest = _this._collection$_rest;
       if (rest == null)
         return;
       bucket = _this._getBucket$2(rest, key);
@@ -3579,7 +3797,7 @@
         return t1;
       result = new Array(_this._collection$_length);
       result.fixed$length = Array;
-      strings = _this._strings;
+      strings = _this._collection$_strings;
       if (strings != null) {
         names = Object.getOwnPropertyNames(strings);
         entries = names.length;
@@ -3589,7 +3807,7 @@
         }
       } else
         index = 0;
-      nums = _this._nums;
+      nums = _this._collection$_nums;
       if (nums != null) {
         names = Object.getOwnPropertyNames(nums);
         entries = names.length;
@@ -3598,7 +3816,7 @@
           ++index;
         }
       }
-      rest = _this._rest;
+      rest = _this._collection$_rest;
       if (rest != null) {
         names = Object.getOwnPropertyNames(rest);
         entries = names.length;
@@ -3613,7 +3831,7 @@
       }
       return _this._keys = result;
     },
-    _addHashTableEntry$3: function(table, key, value) {
+    _collection$_addHashTableEntry$3: function(table, key, value) {
       var _this = this;
       H.assertSubtypeOfRuntimeType(key, H.getTypeArgumentByIndex(_this, 0));
       H.assertSubtypeOfRuntimeType(value, H.getTypeArgumentByIndex(_this, 1));
@@ -3654,10 +3872,10 @@
   };
   P._HashMapKeyIterable.prototype = {
     get$length: function(_) {
-      return this._map._collection$_length;
+      return this._collection$_map._collection$_length;
     },
     get$iterator: function(_) {
-      var t1 = this._map;
+      var t1 = this._collection$_map;
       return new P._HashMapKeyIterator(t1, t1._computeKeys$0(), this.$ti);
     }
   };
@@ -3669,7 +3887,7 @@
       var _this = this,
         keys = _this._keys,
         offset = _this._offset,
-        t1 = _this._map;
+        t1 = _this._collection$_map;
       if (keys !== t1._keys)
         throw H.wrapException(P.ConcurrentModificationError$(t1));
       else if (offset >= keys.length) {
@@ -3912,7 +4130,8 @@
     },
     focus$0: function(receiver) {
       return receiver.focus();
-    }
+    },
+    $isElement: 1
   };
   W.Event.prototype = {$isEvent: 1};
   W.EventTarget.prototype = {
@@ -4002,8 +4221,11 @@
   };
   E.Keyboard_closure.prototype = {
     call$1: function($event) {
+      var t1;
       H.interceptedTypeCheck($event, "$isKeyboardEvent");
       this.$this.keys.putIfAbsent$2($event.keyCode, new E.Keyboard__closure($event));
+      t1 = $.text;
+      t1.textContent = H.S(t1.textContent) + " - " + H.S($event.keyCode);
     },
     $signature: 5
   };
@@ -4034,7 +4256,7 @@
       return "(" + this.x + ", " + H.S(this.y) + ")";
     }
   };
-  E.Ball.prototype = {};
+  E.Scoreboard.prototype = {};
   E.Player.prototype = {
     draw$0: function() {
       var t2,
@@ -4076,11 +4298,53 @@
         _this._position = _this._position.$add(0, t1);
     }
   };
+  E.Ball.prototype = {
+    checkPosition$0: function() {
+      var _this = this,
+        newPosition = _this._position.$add(0, _this._dir),
+        t1 = newPosition.y,
+        t2 = $.$get$Ball_MAX_Y();
+      if (typeof t2 !== "number")
+        return H.iae(t2);
+      if (t1 >= t2 || t1 <= 0) {
+        t1 = _this._dir;
+        t1.y = -1 * t1.y;
+      }
+      t1 = newPosition.x;
+      t2 = $.player1._position;
+      if (t1 <= t2.x) {
+        t1 = newPosition.y;
+        t2 = t2.y;
+        if (t1 >= t2 && t1 <= t2 + 70) {
+          t1 = _this._dir;
+          t1.x = -1 * t1.x;
+          return true;
+        } else {
+          _this._pointWinner = 2;
+          return false;
+        }
+      }
+      t2 = $.player2._position;
+      if (t1 >= t2.x) {
+        t1 = newPosition.y;
+        t2 = t2.y;
+        if (t1 >= t2 && t1 <= t2 + 70) {
+          t1 = _this._dir;
+          t1.x = -1 * t1.x;
+          return true;
+        } else {
+          _this._pointWinner = 1;
+          return false;
+        }
+      }
+      return true;
+    }
+  };
   E.Game.prototype = {
     run$0: function() {
       var $async$goto = 0,
         $async$completer = P._makeAsyncAwaitCompleter(null),
-        $async$returnValue, $async$self = this, t1, t2, $async$temp1;
+        $async$returnValue, $async$self = this, t3, t1, t2, $async$temp1;
       var $async$run$0 = P._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
         if ($async$errorCode === 1)
           return P._asyncRethrow($async$result, $async$completer);
@@ -4103,14 +4367,60 @@
               }
               if (t1 - t2 > 50) {
                 $async$self._lastTimeStamp = t1;
-                E.clear();
-                $async$self.player1.move$0();
-                $async$self.player1.draw$0();
-                $async$self.player2.move$0();
-                $async$self.player2.draw$0();
-                t1 = $async$self.ball;
-                t1._position = t1._position.$add(0, t1.dir);
-                t1 = $async$self.ball;
+                t1 = $.ctx;
+                t1.fillStyle = "black";
+                t2 = $.canvas;
+                t1.fillRect(0, 0, t2.width, t2.height);
+                t2 = $.canvas.width;
+                if (typeof t2 !== "number") {
+                  $async$returnValue = t2.$tdiv();
+                  // goto return
+                  $async$goto = 1;
+                  break;
+                }
+                t2 = C.JSInt_methods._tdivFast$1(t2, 2);
+                t1 = $.ctx;
+                t1.strokeStyle = "#00CC00";
+                t3 = [P.num];
+                t3 = H.assertSubtype(H.setRuntimeTypeInfo([20, 20], t3), "$isList", t3, "$asList");
+                if (!!t1.setLineDash)
+                  t1.setLineDash(t3);
+                else if (!!t1.webkitLineDash)
+                  t1.webkitLineDash = t3;
+                typeof t1.lineDashOffset != "undefined" ? t1.lineDashOffset = 10 : t1.webkitLineDashOffset = 10;
+                t1.lineWidth = 10;
+                t1.beginPath();
+                t1.moveTo(t2, 0);
+                t1.lineTo(t2, $.canvas.height);
+                t1.stroke();
+                $.player1.move$0();
+                $.player1.draw$0();
+                $.player2.move$0();
+                $.player2.draw$0();
+                t1 = $.ball;
+                if (t1.checkPosition$0())
+                  t1._position = t1._position.$add(0, t1._dir);
+                else {
+                  t2 = t1._pointWinner;
+                  t3 = $.scoreboard;
+                  if (t2 === 1) {
+                    t2 = ++$.player1.score;
+                    t3 = t3._p1;
+                    t3[0].className = C.Map_JNkeG.$index(0, t2)[0];
+                    t3[1].className = C.Map_JNkeG.$index(0, t2)[1];
+                    t1._position = $.$get$Ball_P1_SERVICE();
+                    t1._dir = $.$get$Ball_DOWN_RIGHT();
+                  } else {
+                    t2 = ++$.player2.score;
+                    t3 = t3._p2;
+                    t3[0].className = C.Map_JNkeG.$index(0, t2)[0];
+                    t3[1].className = C.Map_JNkeG.$index(0, t2)[1];
+                    t1._position = $.$get$Ball_P2_SERVICE();
+                    t1._dir = $.$get$Ball_DOWN_LEFT();
+                  }
+                }
+                t1 = $.ball;
+                t1.toString;
                 t2 = $.ctx;
                 t2.fillStyle = "#00CC00";
                 t1 = t1._position;
@@ -4143,21 +4453,22 @@
     var _inherit = hunkHelpers.inherit,
       _inheritMany = hunkHelpers.inheritMany;
     _inherit(P.Object, null);
-    _inheritMany(P.Object, [H.JS_CONST, J.Interceptor, J.ArrayIterator, P.Iterable, H.TypeErrorDecoder, P.Error, H.ExceptionAndStackTrace, H.Closure, H._StackTrace, P._TimerImpl, P._AsyncAwaitCompleter, P._Completer, P._FutureListener, P._Future, P._AsyncCallbackEntry, P.Stream, P.StreamSubscription, P._StreamIterator, P.AsyncError, P._Zone, P.MapMixin, P._HashMapKeyIterator, P.bool, P.num, P.StackOverflowError, P._Exception, P.List, P.Null, P.StackTrace, P.String, P.StringBuffer, E.Keyboard, E.Point, E.Ball, E.Player, E.Game]);
+    _inheritMany(P.Object, [H.JS_CONST, J.Interceptor, J.ArrayIterator, P.Iterable, H.ConstantMap, H.TypeErrorDecoder, P.Error, H.ExceptionAndStackTrace, H.Closure, H._StackTrace, P.MapMixin, H.LinkedHashMapCell, H.LinkedHashMapKeyIterator, P._TimerImpl, P._AsyncAwaitCompleter, P._Completer, P._FutureListener, P._Future, P._AsyncCallbackEntry, P.Stream, P.StreamSubscription, P._StreamIterator, P.AsyncError, P._Zone, P._HashMapKeyIterator, P.bool, P.num, P.StackOverflowError, P._Exception, P.List, P.Null, P.StackTrace, P.String, P.StringBuffer, E.Keyboard, E.Point, E.Scoreboard, E.Player, E.Ball, E.Game]);
     _inheritMany(J.Interceptor, [J.JSBool, J.JSNull, J.JavaScriptObject, J.JSArray, J.JSNumber, J.JSString, W.EventTarget, W.CanvasRenderingContext2D, W.DomException, W.Event]);
     _inheritMany(J.JavaScriptObject, [J.PlainJavaScriptObject, J.UnknownJavaScriptObject, J.JavaScriptFunction]);
     _inherit(J.JSUnmodifiableArray, J.JSArray);
     _inheritMany(J.JSNumber, [J.JSInt, J.JSDouble]);
     _inherit(H.EfficientLengthIterable, P.Iterable);
+    _inherit(H.GeneralConstantMap, H.ConstantMap);
     _inheritMany(P.Error, [H.NullError, H.JsNoSuchMethodError, H.UnknownJsTypeError, H.TypeErrorImplementation, H.RuntimeError, P.AssertionError, P.NullThrownError, P.ArgumentError, P.UnsupportedError, P.UnimplementedError, P.StateError, P.ConcurrentModificationError, P.CyclicInitializationError]);
     _inheritMany(H.Closure, [H.unwrapException_saveStackTrace, H.TearOffClosure, H.initHooks_closure, H.initHooks_closure0, H.initHooks_closure1, P._AsyncRun__initializeScheduleImmediate_internalCallback, P._AsyncRun__initializeScheduleImmediate_closure, P._AsyncRun__scheduleImmediateJsOverride_internalCallback, P._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback, P._TimerImpl_internalCallback, P._awaitOnObject_closure, P._awaitOnObject_closure0, P._wrapJsFunctionForAsync_closure, P._Future__addListener_closure, P._Future__prependListeners_closure, P._Future__chainForeignFuture_closure, P._Future__chainForeignFuture_closure0, P._Future__chainForeignFuture_closure1, P._Future__asyncComplete_closure, P._Future__chainFuture_closure, P._Future__asyncCompleteError_closure, P._Future__propagateToListeners_handleWhenCompleteCallback, P._Future__propagateToListeners_handleWhenCompleteCallback_closure, P._Future__propagateToListeners_handleValueCallback, P._Future__propagateToListeners_handleError, P.Stream_length_closure, P.Stream_length_closure0, P._rootHandleUncaughtError_closure, P._RootZone_bindCallback_closure, P._RootZone_bindCallbackGuarded_closure, P._RootZone_bindUnaryCallbackGuarded_closure, P.MapBase_mapToString_closure, W.Window_animationFrame_closure, W._EventStreamSubscription_closure, E.Keyboard_closure, E.Keyboard__closure, E.Keyboard_closure0]);
     _inheritMany(H.TearOffClosure, [H.StaticClosure, H.BoundClosure]);
     _inherit(H._AssertionError, P.AssertionError);
+    _inherit(P.MapBase, P.MapMixin);
+    _inheritMany(P.MapBase, [H.JsLinkedHashMap, P._HashMap]);
+    _inheritMany(H.EfficientLengthIterable, [H.LinkedHashMapKeyIterable, P._HashMapKeyIterable]);
     _inherit(P._SyncCompleter, P._Completer);
     _inherit(P._RootZone, P._Zone);
-    _inherit(P.MapBase, P.MapMixin);
-    _inherit(P._HashMap, P.MapBase);
-    _inherit(P._HashMapKeyIterable, H.EfficientLengthIterable);
     _inheritMany(P.num, [P.double, P.int]);
     _inheritMany(P.ArgumentError, [P.RangeError, P.IndexError]);
     _inheritMany(W.EventTarget, [W.Node, W.Window]);
@@ -4171,6 +4482,7 @@
   })();
   var init = {mangledGlobalNames: {int: "int", double: "double", num: "num", String: "String", bool: "bool", Null: "Null", List: "List"}, mangledNames: {}, getTypeFromName: getGlobalFromName, metadata: [], types: [{func: 1, ret: P.Null}, {func: 1, ret: -1}, {func: 1, ret: -1, args: [{func: 1, ret: -1}]}, {func: 1, args: [,]}, {func: 1, ret: P.Null, args: [,]}, {func: 1, ret: P.Null, args: [W.KeyboardEvent]}, {func: 1, args: [, P.String]}, {func: 1, args: [P.String]}, {func: 1, ret: P.Null, args: [{func: 1, ret: -1}]}, {func: 1, ret: -1, args: [,]}, {func: 1, ret: P.Null, args: [, P.StackTrace]}, {func: 1, ret: P.Null, args: [P.int,,]}, {func: 1, ret: P.Null, args: [,], opt: [P.StackTrace]}, {func: 1, ret: [P._Future,,], args: [,]}, {func: 1, ret: P.Null, args: [,,]}, {func: 1, ret: P.Null, args: [P.num]}, {func: 1, args: [W.Event]}, {func: 1, ret: P.num}], interceptorsByTag: null, leafTags: null};
   (function constants() {
+    var makeConstList = hunkHelpers.makeConstList;
     C.CanvasElement_methods = W.CanvasElement.prototype;
     C.Interceptor_methods = J.Interceptor.prototype;
     C.JSArray_methods = J.JSArray.prototype;
@@ -4301,6 +4613,17 @@
     C.C_JS_CONST3 = function(hooks) { return hooks; }
 ;
     C.C__RootZone = new P._RootZone();
+    C.List_zero_up_zero_bottom = H.setRuntimeTypeInfo(makeConstList(["zero_up", "zero_bottom"]), [P.String]);
+    C.List_one_up_one_bottom = H.setRuntimeTypeInfo(makeConstList(["one_up", "one_bottom"]), [P.String]);
+    C.List_two_up_two_bottom = H.setRuntimeTypeInfo(makeConstList(["two_up", "two_bottom"]), [P.String]);
+    C.List_three_up_three_bottom = H.setRuntimeTypeInfo(makeConstList(["three_up", "three_bottom"]), [P.String]);
+    C.List_four_up_four_bottom = H.setRuntimeTypeInfo(makeConstList(["four_up", "four_bottom"]), [P.String]);
+    C.List_five_up_five_bottom = H.setRuntimeTypeInfo(makeConstList(["five_up", "five_bottom"]), [P.String]);
+    C.List_six_up_six_bottom = H.setRuntimeTypeInfo(makeConstList(["six_up", "six_bottom"]), [P.String]);
+    C.List_seven_up_seven_bottom = H.setRuntimeTypeInfo(makeConstList(["seven_up", "seven_bottom"]), [P.String]);
+    C.List_eight_up_eight_bottom = H.setRuntimeTypeInfo(makeConstList(["eight_up", "eight_bottom"]), [P.String]);
+    C.List_nine_up_nine_bottom = H.setRuntimeTypeInfo(makeConstList(["nine_up", "nine_bottom"]), [P.String]);
+    C.Map_JNkeG = new H.GeneralConstantMap([0, C.List_zero_up_zero_bottom, 1, C.List_one_up_one_bottom, 2, C.List_two_up_two_bottom, 3, C.List_three_up_three_bottom, 4, C.List_four_up_four_bottom, 5, C.List_five_up_five_bottom, 6, C.List_six_up_six_bottom, 7, C.List_seven_up_seven_bottom, 8, C.List_eight_up_eight_bottom, 9, C.List_nine_up_nine_bottom], [null, null]);
   })();
   (function staticFields() {
     $.Closure_functionCounter = 0;
@@ -4322,6 +4645,11 @@
     $.canvas = null;
     $.ctx = null;
     $.keyboard = null;
+    $.text = null;
+    $.player1 = null;
+    $.player2 = null;
+    $.ball = null;
+    $.scoreboard = null;
   })();
   (function lazyInitializers() {
     var _lazy = hunkHelpers.lazy;
@@ -4398,9 +4726,6 @@
     _lazy($, "_AsyncRun__scheduleImmediateClosure", "$get$_AsyncRun__scheduleImmediateClosure", function() {
       return P._AsyncRun__initializeScheduleImmediate();
     });
-    _lazy($, "Ball_DOWN_RIGHT", "$get$Ball_DOWN_RIGHT", function() {
-      return E.Point$(10, 10);
-    });
     _lazy($, "Player_MAX_Y", "$get$Player_MAX_Y", function() {
       var t1 = $.canvas.height;
       if (typeof t1 !== "number")
@@ -4431,6 +4756,24 @@
       if (typeof t1 !== "number")
         return t1.$sub();
       return E.Point$(t2 - 15, (t1 - 70) / 2);
+    });
+    _lazy($, "Ball_MAX_Y", "$get$Ball_MAX_Y", function() {
+      var t1 = $.canvas.height;
+      if (typeof t1 !== "number")
+        return t1.$sub();
+      return t1 - 10;
+    });
+    _lazy($, "Ball_DOWN_LEFT", "$get$Ball_DOWN_LEFT", function() {
+      return E.Point$(-10, 10);
+    });
+    _lazy($, "Ball_DOWN_RIGHT", "$get$Ball_DOWN_RIGHT", function() {
+      return E.Point$(10, 10);
+    });
+    _lazy($, "Ball_P1_SERVICE", "$get$Ball_P1_SERVICE", function() {
+      return E.Point$(50, 50);
+    });
+    _lazy($, "Ball_P2_SERVICE", "$get$Ball_P2_SERVICE", function() {
+      return E.Point$(740, 50);
     });
   })();
   (function nativeSupport() {

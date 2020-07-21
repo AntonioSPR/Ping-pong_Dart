@@ -44,15 +44,13 @@ header {
     float: left;
 }
 
-.number_up {
+#scoreboard_left_up, #scoreboard_right_up {
     width: 20px;
     height: 20px;
     border-width: 10px 10px 5px 10px;
-               /* top, right, bottom, left (like a clock) */
     border-style: solid;
 }
-
-.number_bottom {
+#scoreboard_left_bottom, #scoreboard_right_bottom {
     width: 20px;
     height: 20px;
     border-width: 5px 10px 10px 10px;
