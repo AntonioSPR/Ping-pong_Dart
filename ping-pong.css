@@ -90,8 +90,8 @@ main {
 /*
 canvas {
     // DO NOT UNCOMMENT THIS RULE
-    // It is mandatory to put the dimensions of the canvas here.
-    // If they are put in the .CSS "weird things happen"
+    // It is mandatory to put the dimensions of the canvas in the .HTML file
+    // If they are put in the .CSS file "weird things happen"
     width: 800px;
     height: 600px;
 }

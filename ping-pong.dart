@@ -8,27 +8,21 @@ const F_COLOR = "#00CC00"; // Link (Zelda) green
 CanvasElement canvas;
 CanvasRenderingContext2D ctx;
 Keyboard keyboard;
-// To display error messages I'm going to use the #text element <footer>...<p id="text"></p></footer>
-Element text;
 Player player1;
 Player player2;
 Ball ball;
 Scoreboard scoreboard;
 
 void main() {
-
     canvas = querySelector('#canvas')..focus();
     ctx = canvas.getContext('2d');
     keyboard = new Keyboard();
-    text = querySelector("#text");
-
     player1 = new Player(Player.player1InitialPosition, Player.PLAYER1);
     player2 = new Player(Player.player2InitialPosition, Player.PLAYER2);
     ball = new Ball();
     scoreboard = new Scoreboard();
 
     new Game();
-
 } //---------- main() ----------------------
 
 class Keyboard {
@@ -37,7 +31,6 @@ class Keyboard {
     Keyboard() {
         window.onKeyDown.listen((KeyboardEvent event) {
            keys.putIfAbsent(event.keyCode, () => event.timeStamp);
-           text.text = "${text.text} - ${event.keyCode}";
         });
 
         window.onKeyUp.listen((KeyboardEvent event) {
@@ -46,8 +39,7 @@ class Keyboard {
     }
 
     bool isPressed(int keyCode) => keys.containsKey(keyCode);
-
-} //----------- class Keyboard -------------
+} //---------- class Keyboard --------------
 
 // My own class Point, with blackjack and hookers
 class Point {
@@ -66,7 +58,6 @@ class Point {
     String toString() {
         return "(${this.x}, ${this.y})";
     }
-
 } //----------- class Point ----------------
 
 class Scoreboard {
@@ -87,19 +78,19 @@ class Scoreboard {
     List<Element> _p1 = [querySelector('#scoreboard_left_up'),  querySelector('#scoreboard_left_bottom') ];
     List<Element> _p2 = [querySelector('#scoreboard_right_up'), querySelector('#scoreboard_right_bottom')];
 
-    Scoreboard(){
+    Scoreboard() {
         _p1[TOP].className    = numbers[0][TOP];
         _p1[BOTTOM].className = numbers[0][BOTTOM];
         _p2[TOP].className    = numbers[0][TOP];
         _p2[BOTTOM].className = numbers[0][BOTTOM];
     }
 
-    void p1(int n){
+    void p1(int n) {
         _p1[TOP].className    = numbers[n][TOP];
         _p1[BOTTOM].className = numbers[n][BOTTOM];
     }
 
-    void p2(int n){
+    void p2(int n) {
         _p2[TOP].className    = numbers[n][TOP];
         _p2[BOTTOM].className = numbers[n][BOTTOM];
     }
@@ -108,7 +99,6 @@ class Scoreboard {
         p1(0);
         p2(0);
   }
-
 } //----------- class Scoreboard -----------
 
 class Player {
@@ -131,12 +121,12 @@ class Player {
     String _name;
     int score = 0;
 
-    Player(Point this._position, String this._name){
-        if (this._name == PLAYER1){
+    Player(Point this._position, String this._name) {
+        if (this._name == PLAYER1) {
             // player1. Control keys "q" and "a"
             _keyUp   = KeyCode.Q;
             _keyDown = KeyCode.A;
-        } else if (this._name == PLAYER2){
+        } else if (this._name == PLAYER2) {
             // player2. Control keys "p" and "l"
             _keyUp   = KeyCode.P;
             _keyDown = KeyCode.L;
@@ -154,9 +144,9 @@ class Player {
     }
 
     void _checkInput() {
-        if      (keyboard.isPressed(this._keyUp))   { _dir = UP;     }
-        else if (keyboard.isPressed(this._keyDown)) { _dir = DOWN;   }
-        else                                   { _dir = STAND_STILL; }
+        if      (keyboard.isPressed(this._keyUp))   { _dir = UP;          }
+        else if (keyboard.isPressed(this._keyDown)) { _dir = DOWN;        }
+        else                                        { _dir = STAND_STILL; }
     }
 
     void move() {
@@ -166,11 +156,6 @@ class Player {
             _position = _position + _dir;
         }
     }
-
-    void reset () {
-        score = 0;
-    }
-
 } //----------- class Player ---------------
 
 class Ball {
@@ -196,30 +181,6 @@ class Ball {
     num get y => _position.y;
 
     int _pointWinner;
-
-    void draw(){
-        ctx..fillStyle = F_COLOR
-            ..fillRect(_position.x, _position.y, BALL_WIDTH, BALL_WIDTH);
-    }
-
-    void move(){
-        if(checkPosition()) {
-            _position = _position + _dir;
-        }
-        else {
-            if (_pointWinner == P1) {
-                player1.score += 1;
-                scoreboard.p1(player1.score);
-                _position = P1_SERVICE;
-                _dir      = DOWN_RIGHT;
-            } else {
-                player2.score += 1;
-                scoreboard.p2(player2.score);
-                _position = P2_SERVICE;
-                _dir      = DOWN_LEFT;
-            }
-        }
-    }
 
     bool checkPosition(){
         // True if the point can continue
@@ -257,16 +218,46 @@ class Ball {
         return true;
     }
 
+    void move(){
+        if(checkPosition()) {
+            _position = _position + _dir;
+        }
+        else {
+            if (_pointWinner == P1) {
+                player1.score += 1;
+                scoreboard.p1(player1.score);
+                _position = P1_SERVICE;
+                _dir      = DOWN_RIGHT;
+            } else {
+                player2.score += 1;
+                scoreboard.p2(player2.score);
+                _position = P2_SERVICE;
+                _dir      = DOWN_LEFT;
+            }
+        }
+    }
+
+    void draw(){
+        ctx..fillStyle = F_COLOR
+            ..fillRect(_position.x, _position.y, BALL_WIDTH, BALL_WIDTH);
+    }
+
     reset(Point playerService){
         _position = playerService;
         playerService == P1_SERVICE ? _dir = DOWN_RIGHT : _dir = DOWN_LEFT;
     }
-
 } //----------- class Ball -----------------
 
 class Game  {
     static const SPACE = 32;
     static const INTRO = 13;
+
+    static const STOP  = 0;
+    static const PAUSE = 1;
+    static const RUN   = 3;
+    int _state = STOP;
+    Element _instructions = querySelector("#instructions");
+
 
     // Speed control. Smaller numbers make te game run faster
     static const num GAME_SPEED = 50;
@@ -274,14 +265,17 @@ class Game  {
     num _lastTimeStamp = 0;
 
     Game() {
+        clear();
         run();
     }
 
   void start(){
-        player1.reset();
-        player2.reset();
+        clear();
+        player1.score = 0;
+        player2.score = 0;
         ball.reset(Ball.P1_SERVICE);
         scoreboard.reset();
+        _instructions.text = "Left player controls: Q A --- Right player controls: P L";
         run();
     }
 
@@ -306,18 +300,31 @@ class Game  {
 
     void update(num delta) {
         num diff = delta - _lastTimeStamp;
-
-        if (diff > GAME_SPEED) {
-            _lastTimeStamp = delta;
-            clear();
-            player1.move();
-            player1.draw();
-            player2.move();
-            player2.draw();
-            ball.move();
-            ball.draw();
+        switch (_state) {
+            case STOP :
+                if (keyboard.isPressed(INTRO)) {
+                    _state = RUN;
+                    start();
+                }
+                break;
+            case RUN :
+                if (diff > GAME_SPEED) {
+                    _lastTimeStamp = delta;
+                    if (player1.score < 9  && player2.score < 9) {
+                        clear();
+                        player1.move();
+                        player1.draw();
+                        player2.move();
+                        player2.draw();
+                        ball.move();
+                        ball.draw();
+                    } else {
+                        _state = STOP;
+                        _instructions.text = "Left player controls: Q A --- Right player controls: P L --- Press ENTER to restart the game";
+                    }
+                }
+                break;
         }
         run();
     }
-
 } //----------- class Game -----------------

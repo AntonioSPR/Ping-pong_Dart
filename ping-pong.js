@@ -1700,7 +1700,7 @@
       else {
         future = new P._Future($.Zone__current, [null]);
         H.assertSubtypeOfRuntimeType(object, null);
-        future._state = 4;
+        future._async$_state = 4;
         future._resultOrListeners = object;
         future._thenAwait$1$2(thenCallback, _null, _null);
       }
@@ -1722,7 +1722,7 @@
     },
     _Future__chainForeignFuture: function(source, target) {
       var e, s, exception;
-      target._state = 1;
+      target._async$_state = 1;
       try {
         source.then$1$2$onError(new P._Future__chainForeignFuture_closure(target), new P._Future__chainForeignFuture_closure0(target), P.Null);
       } catch (exception) {
@@ -1733,16 +1733,16 @@
     },
     _Future__chainCoreFuture: function(source, target) {
       var t1, listeners;
-      for (; t1 = source._state, t1 === 2;)
+      for (; t1 = source._async$_state, t1 === 2;)
         source = H.interceptedTypeCheck(source._resultOrListeners, "$is_Future");
       if (t1 >= 4) {
         listeners = target._removeListeners$0();
-        target._state = source._state;
+        target._async$_state = source._async$_state;
         target._resultOrListeners = source._resultOrListeners;
         P._Future__propagateToListeners(target, listeners);
       } else {
         listeners = H.interceptedTypeCheck(target._resultOrListeners, "$is_FutureListener");
-        target._state = 2;
+        target._async$_state = 2;
         target._resultOrListeners = source;
         source._prependListeners$1(listeners);
       }
@@ -1752,7 +1752,7 @@
         t1 = _box_1.source = source;
       for (; true;) {
         _box_0 = {};
-        hasError = t1._state === 8;
+        hasError = t1._async$_state === 8;
         if (listeners == null) {
           if (hasError) {
             asyncError = H.interceptedTypeCheck(t1._resultOrListeners, "$isAsyncError");
@@ -1804,11 +1804,11 @@
             $.Zone__current = oldZone;
           t1 = _box_0.listenerValueOrError;
           if (!!J.getInterceptor$(t1).$isFuture) {
-            if (t1._state >= 4) {
+            if (t1._async$_state >= 4) {
               current = H.interceptedTypeCheck(t3._resultOrListeners, "$is_FutureListener");
               t3._resultOrListeners = null;
               listeners = t3._reverseListeners$1(current);
-              t3._state = t1._state;
+              t3._async$_state = t1._async$_state;
               t3._resultOrListeners = t1._resultOrListeners;
               _box_1.source = t1;
               continue;
@@ -1825,11 +1825,11 @@
         t2 = _box_0.listenerValueOrError;
         if (!t1) {
           H.assertSubtypeOfRuntimeType(t2, H.getTypeArgumentByIndex(result, 0));
-          result._state = 4;
+          result._async$_state = 4;
           result._resultOrListeners = t2;
         } else {
           H.interceptedTypeCheck(t2, "$isAsyncError");
-          result._state = 8;
+          result._async$_state = 8;
           result._resultOrListeners = t2;
         }
         _box_1.source = result;
@@ -2014,7 +2014,7 @@
     },
     _Future: function _Future(t0, t1) {
       var _ = this;
-      _._state = 0;
+      _._async$_state = 0;
       _._zone = t0;
       _._resultOrListeners = null;
       _.$ti = t1;
@@ -2505,7 +2505,6 @@
       $.canvas = t2;
       $.ctx = H.interceptedTypeCheck(C.CanvasElement_methods.getContext$1(t2, "2d"), "$isCanvasRenderingContext2D");
       $.keyboard = E.Keyboard$();
-      $.text = t1.querySelector("#text");
       $.player1 = E.Player$($.$get$Player_player1InitialPosition(), "player1");
       $.player2 = E.Player$($.$get$Player_player2InitialPosition(), "player2");
       $.ball = new E.Ball($.$get$Ball_P1_SERVICE(), $.$get$Ball_DOWN_RIGHT());
@@ -2517,7 +2516,9 @@
       t2[0].className = C.Map_JNkeG.$index(0, 0)[0];
       t2[1].className = C.Map_JNkeG.$index(0, 0)[1];
       $.scoreboard = new E.Scoreboard(t3, t2);
-      new E.Game().run$0();
+      t1 = new E.Game(t1.querySelector("#instructions"));
+      t1.clear$0(0);
+      t1.run$0();
     },
     Keyboard$: function() {
       var t1 = new E.Keyboard(P.HashMap_HashMap(P.int, P.num));
@@ -2575,7 +2576,9 @@
       this._dir = t1;
       this._pointWinner = null;
     },
-    Game: function Game() {
+    Game: function Game(t0) {
+      this._state = 0;
+      this._instructions = t0;
       this._lastTimeStamp = 0;
     }
   };
@@ -3198,7 +3201,7 @@
       if (error == null)
         error = new P.NullThrownError();
       t1 = this.future;
-      if (t1._state !== 0)
+      if (t1._async$_state !== 0)
         throw H.wrapException(P.StateError$("Future already completed"));
       t1._completeError$2(error, stackTrace);
     }
@@ -3208,7 +3211,7 @@
       var t1;
       H.futureOrCheck(value, {futureOr: 1, type: H.getTypeArgumentByIndex(this, 0)});
       t1 = this.future;
-      if (t1._state !== 0)
+      if (t1._async$_state !== 0)
         throw H.wrapException(P.StateError$("Future already completed"));
       t1._complete$1(value);
     }
@@ -3259,19 +3262,19 @@
     },
     _addListener$1: function(listener) {
       var source, _this = this,
-        t1 = _this._state;
+        t1 = _this._async$_state;
       if (t1 <= 1) {
         listener._nextListener = H.interceptedTypeCheck(_this._resultOrListeners, "$is_FutureListener");
         _this._resultOrListeners = listener;
       } else {
         if (t1 === 2) {
           source = H.interceptedTypeCheck(_this._resultOrListeners, "$is_Future");
-          t1 = source._state;
+          t1 = source._async$_state;
           if (t1 < 4) {
             source._addListener$1(listener);
             return;
           }
-          _this._state = t1;
+          _this._async$_state = t1;
           _this._resultOrListeners = source._resultOrListeners;
         }
         P._rootScheduleMicrotask(null, null, _this._zone, H.functionTypeCheck(new P._Future__addListener_closure(_this, listener), {func: 1, ret: -1}));
@@ -3282,7 +3285,7 @@
       _box_0.listeners = listeners;
       if (listeners == null)
         return;
-      t1 = _this._state;
+      t1 = _this._async$_state;
       if (t1 <= 1) {
         existingListeners = H.interceptedTypeCheck(_this._resultOrListeners, "$is_FutureListener");
         cursor = _this._resultOrListeners = listeners;
@@ -3294,12 +3297,12 @@
       } else {
         if (t1 === 2) {
           source = H.interceptedTypeCheck(_this._resultOrListeners, "$is_Future");
-          t1 = source._state;
+          t1 = source._async$_state;
           if (t1 < 4) {
             source._prependListeners$1(listeners);
             return;
           }
-          _this._state = t1;
+          _this._async$_state = t1;
           _this._resultOrListeners = source._resultOrListeners;
         }
         _box_0.listeners = _this._reverseListeners$1(listeners);
@@ -3332,7 +3335,7 @@
       else {
         listeners = _this._removeListeners$0();
         H.assertSubtypeOfRuntimeType(value, t1);
-        _this._state = 4;
+        _this._async$_state = 4;
         _this._resultOrListeners = value;
         P._Future__propagateToListeners(_this, listeners);
       }
@@ -3341,7 +3344,7 @@
       var listeners, _this = this;
       H.assertSubtypeOfRuntimeType(value, H.getTypeArgumentByIndex(_this, 0));
       listeners = _this._removeListeners$0();
-      _this._state = 4;
+      _this._async$_state = 4;
       _this._resultOrListeners = value;
       P._Future__propagateToListeners(_this, listeners);
     },
@@ -3349,7 +3352,7 @@
       var listeners, _this = this;
       H.interceptedTypeCheck(stackTrace, "$isStackTrace");
       listeners = _this._removeListeners$0();
-      _this._state = 8;
+      _this._async$_state = 8;
       _this._resultOrListeners = new P.AsyncError(error, stackTrace);
       P._Future__propagateToListeners(_this, listeners);
     },
@@ -3360,7 +3363,7 @@
         _this._chainFuture$1(value);
         return;
       }
-      _this._state = 1;
+      _this._async$_state = 1;
       P._rootScheduleMicrotask(null, null, _this._zone, H.functionTypeCheck(new P._Future__asyncComplete_closure(_this, value), {func: 1, ret: -1}));
     },
     _chainFuture$1: function(value) {
@@ -3368,8 +3371,8 @@
         t1 = _this.$ti;
       H.assertSubtype(value, "$isFuture", t1, "$asFuture");
       if (H.checkSubtype(value, "$is_Future", t1, null)) {
-        if (value._state === 8) {
-          _this._state = 1;
+        if (value._async$_state === 8) {
+          _this._async$_state = 1;
           P._rootScheduleMicrotask(null, null, _this._zone, H.functionTypeCheck(new P._Future__chainFuture_closure(_this, value), {func: 1, ret: -1}));
         } else
           P._Future__chainCoreFuture(value, _this);
@@ -3378,7 +3381,7 @@
       P._Future__chainForeignFuture(value, _this);
     },
     _asyncCompleteError$2: function(error, stackTrace) {
-      this._state = 1;
+      this._async$_state = 1;
       P._rootScheduleMicrotask(null, null, this._zone, H.functionTypeCheck(new P._Future__asyncCompleteError_closure(this, error, stackTrace), {func: 1, ret: -1}));
     },
     $isFuture: 1
@@ -3398,7 +3401,7 @@
   P._Future__chainForeignFuture_closure.prototype = {
     call$1: function(value) {
       var t1 = this.target;
-      t1._state = 0;
+      t1._async$_state = 0;
       t1._complete$1(value);
     },
     $signature: 4
@@ -3463,8 +3466,8 @@
         return;
       }
       if (!!J.getInterceptor$(completeResult).$isFuture) {
-        if (completeResult instanceof P._Future && completeResult._state >= 4) {
-          if (completeResult._state === 8) {
+        if (completeResult instanceof P._Future && completeResult._async$_state >= 4) {
+          if (completeResult._async$_state === 8) {
             t1 = _this._box_0;
             t1.listenerValueOrError = H.interceptedTypeCheck(completeResult._resultOrListeners, "$isAsyncError");
             t1.listenerHasError = true;
@@ -4221,11 +4224,8 @@
   };
   E.Keyboard_closure.prototype = {
     call$1: function($event) {
-      var t1;
       H.interceptedTypeCheck($event, "$isKeyboardEvent");
       this.$this.keys.putIfAbsent$2($event.keyCode, new E.Keyboard__closure($event));
-      t1 = $.text;
-      t1.textContent = H.S(t1.textContent) + " - " + H.S($event.keyCode);
     },
     $signature: 5
   };
@@ -4256,7 +4256,18 @@
       return "(" + this.x + ", " + H.S(this.y) + ")";
     }
   };
-  E.Scoreboard.prototype = {};
+  E.Scoreboard.prototype = {
+    p1$1: function(n) {
+      var t1 = this._p1;
+      t1[0].className = C.Map_JNkeG.$index(0, n)[0];
+      t1[1].className = C.Map_JNkeG.$index(0, n)[1];
+    },
+    p2$1: function(n) {
+      var t1 = this._p2;
+      t1[0].className = C.Map_JNkeG.$index(0, n)[0];
+      t1[1].className = C.Map_JNkeG.$index(0, n)[1];
+    }
+  };
   E.Player.prototype = {
     draw$0: function() {
       var t2,
@@ -4341,10 +4352,35 @@
     }
   };
   E.Game.prototype = {
+    clear$0: function(_) {
+      var t2, t3,
+        t1 = $.ctx;
+      t1.fillStyle = "black";
+      t2 = $.canvas;
+      t1.fillRect(0, 0, t2.width, t2.height);
+      t2 = $.canvas.width;
+      if (typeof t2 !== "number")
+        return t2.$tdiv();
+      t2 = C.JSInt_methods._tdivFast$1(t2, 2);
+      t1 = $.ctx;
+      t1.strokeStyle = "#00CC00";
+      t3 = [P.num];
+      t3 = H.assertSubtype(H.setRuntimeTypeInfo([20, 20], t3), "$isList", t3, "$asList");
+      if (!!t1.setLineDash)
+        t1.setLineDash(t3);
+      else if (!!t1.webkitLineDash)
+        t1.webkitLineDash = t3;
+      typeof t1.lineDashOffset != "undefined" ? t1.lineDashOffset = 10 : t1.webkitLineDashOffset = 10;
+      t1.lineWidth = 10;
+      t1.beginPath();
+      t1.moveTo(t2, 0);
+      t1.lineTo(t2, $.canvas.height);
+      t1.stroke();
+    },
     run$0: function() {
       var $async$goto = 0,
         $async$completer = P._makeAsyncAwaitCompleter(null),
-        $async$returnValue, $async$self = this, t3, t1, t2, $async$temp1;
+        $async$returnValue, $async$self = this, t2, t3, delta, t1, $async$temp1;
       var $async$run$0 = P._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
         if ($async$errorCode === 1)
           return P._asyncRethrow($async$result, $async$completer);
@@ -4357,74 +4393,68 @@
               return P._asyncAwait(C.Window_methods.get$animationFrame(window), $async$run$0);
             case 3:
               // returning from await.
-              t1 = $async$temp1.numTypeCheck($async$result);
-              t2 = $async$self._lastTimeStamp;
-              if (typeof t1 !== "number") {
-                $async$returnValue = t1.$sub();
+              delta = $async$temp1.numTypeCheck($async$result);
+              t1 = $async$self._lastTimeStamp;
+              if (typeof delta !== "number") {
+                $async$returnValue = delta.$sub();
                 // goto return
                 $async$goto = 1;
                 break;
               }
-              if (t1 - t2 > 50) {
-                $async$self._lastTimeStamp = t1;
-                t1 = $.ctx;
-                t1.fillStyle = "black";
-                t2 = $.canvas;
-                t1.fillRect(0, 0, t2.width, t2.height);
-                t2 = $.canvas.width;
-                if (typeof t2 !== "number") {
-                  $async$returnValue = t2.$tdiv();
-                  // goto return
-                  $async$goto = 1;
-                  break;
-                }
-                t2 = C.JSInt_methods._tdivFast$1(t2, 2);
-                t1 = $.ctx;
-                t1.strokeStyle = "#00CC00";
-                t3 = [P.num];
-                t3 = H.assertSubtype(H.setRuntimeTypeInfo([20, 20], t3), "$isList", t3, "$asList");
-                if (!!t1.setLineDash)
-                  t1.setLineDash(t3);
-                else if (!!t1.webkitLineDash)
-                  t1.webkitLineDash = t3;
-                typeof t1.lineDashOffset != "undefined" ? t1.lineDashOffset = 10 : t1.webkitLineDashOffset = 10;
-                t1.lineWidth = 10;
-                t1.beginPath();
-                t1.moveTo(t2, 0);
-                t1.lineTo(t2, $.canvas.height);
-                t1.stroke();
-                $.player1.move$0();
-                $.player1.draw$0();
-                $.player2.move$0();
-                $.player2.draw$0();
-                t1 = $.ball;
-                if (t1.checkPosition$0())
-                  t1._position = t1._position.$add(0, t1._dir);
-                else {
-                  t2 = t1._pointWinner;
-                  t3 = $.scoreboard;
-                  if (t2 === 1) {
-                    t2 = ++$.player1.score;
-                    t3 = t3._p1;
-                    t3[0].className = C.Map_JNkeG.$index(0, t2)[0];
-                    t3[1].className = C.Map_JNkeG.$index(0, t2)[1];
+              switch ($async$self._state) {
+                case 0:
+                  if ($.keyboard.keys.containsKey$1(13)) {
+                    $async$self._state = 3;
+                    $async$self.clear$0(0);
+                    $.player1.score = 0;
+                    $.player2.score = 0;
+                    t1 = $.ball;
                     t1._position = $.$get$Ball_P1_SERVICE();
                     t1._dir = $.$get$Ball_DOWN_RIGHT();
-                  } else {
-                    t2 = ++$.player2.score;
-                    t3 = t3._p2;
-                    t3[0].className = C.Map_JNkeG.$index(0, t2)[0];
-                    t3[1].className = C.Map_JNkeG.$index(0, t2)[1];
-                    t1._position = $.$get$Ball_P2_SERVICE();
-                    t1._dir = $.$get$Ball_DOWN_LEFT();
+                    t1 = $.scoreboard;
+                    t1.p1$1(0);
+                    t1.p2$1(0);
+                    $async$self._instructions.textContent = "Left player controls: Q A --- Right player controls: P L";
+                    $async$self.run$0();
                   }
-                }
-                t1 = $.ball;
-                t1.toString;
-                t2 = $.ctx;
-                t2.fillStyle = "#00CC00";
-                t1 = t1._position;
-                t2.fillRect(t1.x, t1.y, 10, 10);
+                  break;
+                case 3:
+                  if (delta - t1 > 50) {
+                    $async$self._lastTimeStamp = delta;
+                    if ($.player1.score < 9 && $.player2.score < 9) {
+                      $async$self.clear$0(0);
+                      $.player1.move$0();
+                      $.player1.draw$0();
+                      $.player2.move$0();
+                      $.player2.draw$0();
+                      t1 = $.ball;
+                      if (t1.checkPosition$0())
+                        t1._position = t1._position.$add(0, t1._dir);
+                      else {
+                        t2 = t1._pointWinner;
+                        t3 = $.scoreboard;
+                        if (t2 === 1) {
+                          t3.p1$1(++$.player1.score);
+                          t1._position = $.$get$Ball_P1_SERVICE();
+                          t1._dir = $.$get$Ball_DOWN_RIGHT();
+                        } else {
+                          t3.p2$1(++$.player2.score);
+                          t1._position = $.$get$Ball_P2_SERVICE();
+                          t1._dir = $.$get$Ball_DOWN_LEFT();
+                        }
+                      }
+                      t1 = $.ball;
+                      t1.toString;
+                      t2 = $.ctx;
+                      t2.fillStyle = "#00CC00";
+                      t1 = t1._position;
+                      t2.fillRect(t1.x, t1.y, 10, 10);
+                    } else {
+                      $async$self._state = 0;
+                      $async$self._instructions.textContent = "Left player controls: Q A --- Right player controls: P L --- Press ENTER to restart the game";
+                    }
+                  }
+                  break;
               }
               $async$self.run$0();
             case 1:
@@ -4645,7 +4675,6 @@
     $.canvas = null;
     $.ctx = null;
     $.keyboard = null;
-    $.text = null;
     $.player1 = null;
     $.player2 = null;
     $.ball = null;
